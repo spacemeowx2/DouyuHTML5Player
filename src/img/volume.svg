@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg width="20" height="20" version="1.1"
+xmlns="http://www.w3.org/2000/svg" style="stroke: #5a5a5a; fill:transparent; stroke-width:2">
+  <path d="M9,4 L5,8 L2,8 L2,12 L5,12 L9,16 Z" style="fill: #5a5a5a" />
+  <path d="M12,12 A3,3 0 0 0 12,8 Z" style="fill: #5a5a5a" />
+  <path d="M12,2 A 9,9 0 0 1 12,18" style="stroke-width:2"/>
+</svg>

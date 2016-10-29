@@ -1,0 +1,1 @@
+window.postMsg = window.postMessage

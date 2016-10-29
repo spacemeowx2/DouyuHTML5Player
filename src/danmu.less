@@ -1,0 +1,253 @@
+@color: #5a5a5a;
+@background: #fafafa;
+
+.player-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100001;
+  .menu {
+    position: absolute;
+    background-color: #fff;
+    min-width: 200px;
+    border: 1px solid #aaa;
+    .menu-item {
+      color: #000;
+      padding: 5px;
+      // border-bottom: 1px solid #aaa;
+      cursor: default;
+      &:last-child {
+        border-bottom: 0;
+      }
+      &:hover {
+        background-color: #ddd;
+      }
+    }
+  }
+}
+
+.danmu-container {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #e5e4e4;
+  box-sizing: border-box;
+}
+
+.danmu-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #000;
+
+  .danmu-video {
+    width: 100%;
+    height: calc(~"100% - 42px");
+  }
+
+  .danmu-ctrl {
+    box-sizing: border-box;
+    border: 1px solid @background;
+    border-left: 0;
+    border-right: 0;
+    width: 100%;
+    height: 42px;
+    padding: 5px;
+    color: @color;
+    background: @background;
+    & > div {
+      float: left;
+      cursor: pointer;
+    }
+    .danmu-btn {
+      box-sizing: border-box;
+      display: inline-block;
+      height: 30px;
+    }
+    .danmu-mute {
+      float: right;
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      transition: all .3s ease;
+      background: url(img/volume.svg) no-repeat center;
+      &[muted] {
+        background: url(img/muted.svg) no-repeat center;
+      }
+    }
+    .danmu-volume {
+      @bgcolor: #9f9f9f;
+      @fcolor: #4285f4;
+      box-sizing: border-box;
+      margin: 5px;
+      height: 20px;
+      float: right;
+      position: relative;
+      .progress {
+        position: absolute;
+        pointer-events: none;
+        top: 9px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background-color: @fcolor;
+      }
+      &>input[type="range"] {
+        height: 20px;
+        outline: none;
+        background-color: transparent;
+        -webkit-appearance: none;
+        &::-webkit-slider-thumb {
+          cursor: pointer;
+          -webkit-appearance: none;
+          height: 12px;
+          width: 12px;
+          margin-top: -5px;
+          border-radius: 50%;
+          background-color: @fcolor;
+          position: relative;
+          box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
+        }
+        &::-webkit-slider-runnable-track {
+          height: 2px;
+          background-color: @bgcolor;
+        }
+      }
+    }
+    .danmu-fullpage {
+      float: right;
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      &::before {
+        content: " ";
+        display: block;
+        width: 20px;
+        height: 16px;
+        border: 2px solid @color;
+        box-sizing: border-box;
+        margin-top: 2px;
+      }
+    }
+    .danmu-fullscreen {
+      float: right;
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      background: url(img/fullscreen.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .danmu-switch {
+      float: right;
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      padding: 0 5px;
+    }
+    .danmu-tip {
+      float: right;
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      padding: 0 5px;
+      cursor: default;
+    }
+    .danmu-reload {
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      background: url(img/reload.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .danmu-playpause {
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      &::before {
+        transition: all .3s ease;
+        border-color: transparent;
+        content: " ";
+        display: block;
+      }
+      &:not([pause]) {
+        &::before {
+          width: 0;
+          height: 0;
+          border-top: 10px solid transparent;
+          border-left: 20px solid @color;
+          border-bottom: 10px solid transparent;
+        }
+      }
+      &[pause] {
+        &::before {
+          box-sizing: border-box;
+          width: 15px;
+          height: 20px;
+          margin-left: 2.5px;
+          border-left: 5px solid @color;
+          border-right: 5px solid @color;
+        }
+      }
+    }
+  }
+  .danmu-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    color: #fff;
+    font-size: 25px;
+    font-family: SimHei, "Microsoft JhengHei", Arial, Helvetica, sans-serif;
+    text-shadow: rgb(0, 0, 0) 1px 0px 1px, rgb(0, 0, 0) 0px 1px 1px, rgb(0, 0, 0) 0px -1px 1px, rgb(0, 0, 0) -1px 0px 1px;
+    line-height: 1.25;
+    font-weight: bold;
+    overflow: hidden;
+
+    opacity: 0.5;
+    & > div {
+      display: none;
+      position: absolute;
+      white-space: pre;
+    }
+    .danmu-self {
+      outline: 2px solid #fff;
+    }
+  }
+}
+
+.danmu-wrap[fullpage] {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 100000;
+  cursor: none;
+
+  .danmu-video {
+    height: 100%;
+    transition: all .3s ease;
+  }
+  .danmu-ctrl {
+    position: absolute;
+    bottom: 0;
+    opacity: 0;
+    transition: all .3s ease;
+  }
+  &[hover] {
+    cursor: default;
+    .danmu-video {
+      height: calc(~"100% - 42px");
+    }
+  }
+  &[hover] .danmu-ctrl { // , .danmu-ctrl:hover
+    cursor: default;
+    opacity: 1;
+  }
+}
