@@ -79,18 +79,30 @@ function DanmuPlayer (controls, isSelf) {
     this.inputing = false
   })
   document.addEventListener('keydown', event => {
-    if (event.keyCode !== 13) return
-    if (playerWrap.getAttribute('fullpage') === null) return
-    this.inputing = !this.inputing
-    if (this.inputing) {
-      msgInput.value = ''
-      playerWrap.setAttribute('inputing', '')
-      msgInput.focus()
-    } else {
-      if (msgInput.value.length > 0) {
-        controls.onSendDanmu(msgInput.value)
+    if (event.keyCode == 13) { // enter
+      if (playerWrap.getAttribute('fullpage') === null) return
+      this.inputing = !this.inputing
+      if (this.inputing) {
+        msgInput.value = ''
+        playerWrap.setAttribute('inputing', '')
+        msgInput.focus()
+      } else {
+        if (msgInput.value.length > 0) {
+          controls.onSendDanmu(msgInput.value)
+        }
+        playerWrap.removeAttribute('inputing')
       }
-      playerWrap.removeAttribute('inputing')
+    } else if (event.keyCode == 27) { // esc
+      if (this.wrap.getAttribute('fullpage') === '') {
+        this.onFullpage()
+      }
+    }
+  })
+
+  document.addEventListener('webkitfullscreenchange', event => {
+    this.fullscreen = !this.fullscreen
+    if (!this.fullscreen) {
+      this.onFullpage()
     }
   })
 
@@ -111,6 +123,7 @@ function DanmuPlayer (controls, isSelf) {
   this.hideDanmu = false
   this.playing = true
   this.muted = false
+  this.fullscreen = false
   for (let i = 0; i < poolSize; i++) {
     let dm = document.createElement('div')
     dm.using = false
