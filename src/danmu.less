@@ -250,6 +250,7 @@
       background: rgba(255,255,255,0.8);
       padding: 5px;
       color: #000;
+      cursor: default;
       &::-webkit-input-placeholder {
         color: #888;
       }
@@ -258,6 +259,9 @@
   &[inputing] .danmu-input {
     transform: translateY(0);
     opacity: 1;
+    &>input {
+      cursor: text;
+    }
   }
 
   .danmu-video {
