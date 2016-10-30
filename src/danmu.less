@@ -243,11 +243,13 @@
     transform: translateY(50px);
     opacity: 0;
     &>input {
+      @bgcolor: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 10px 1px @bgcolor;
       width: 300px;
       margin: 0 auto;
       display: block;
       border: 0;
-      background: rgba(255,255,255,0.8);
+      background: @bgcolor;
       padding: 5px;
       color: #000;
       cursor: default;
