@@ -31,4 +31,15 @@ waitObject([() => window.JSocket, () => window.md5, () => window.douyuApi]).then
 .then(() => {
   let api = douyuApi(getRoomId())
   api.hookExe()
+
+  window.addEventListener('message', event => {
+    if (event.source != window)
+      return
+
+    if (event.data.type && (event.data.type == "SENDANMU")) {
+      const data = event.data.data
+      api.sendDanmu(data)
+    }
+  }, false)
+  //api.sendDanmu
 })

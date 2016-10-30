@@ -203,7 +203,7 @@ let douyuApi = function douyuApi (roomId) {
   server = randDanmuServer()
   // 
   douyuClient(server.ip, server.port, {
-    chatmsg (data, send, {ACJ}) {
+    chatmsg (data, send, {ACJ, encode}) {
       if (blacklist.includes(data.uid)) {
         console.log('black')
       }
@@ -216,6 +216,9 @@ let douyuApi = function douyuApi (roomId) {
         console.error('wtf', e)
       }
       ACJ('room_data_chat2', data)
+      if (window.BarrageReturn) {
+        window.BarrageReturn(encode(data))
+      }
     },
     initcl: 'room_data_chatinit',
     dgb: 'room_data_giftbat1',
@@ -253,7 +256,11 @@ let douyuApi = function douyuApi (roomId) {
       type: 'qtlq'
     },
     js_getRankScore: repeatPacket,
-    js_sendmsg: repeatPacket,
+    js_sendmsg (msg) {
+      msg = douyuClient.decode(msg)
+      msg.type = 'chatmessage'
+      return msg
+    },
     js_giveGift (gift) {
       /*
         type: sgq
@@ -270,9 +277,7 @@ let douyuApi = function douyuApi (roomId) {
       return gift
     },
     js_GetHongbao: repeatPacket,
-    js_UserHaveHandle () {
-
-    },
+    js_UserHaveHandle () {},
     js_myblacklist (list) {
       console.log('add blacklist', list)
       blacklist = list.split('|')
@@ -303,12 +308,22 @@ let douyuApi = function douyuApi (roomId) {
       } else if (window.thisMovie) {
         window.thisMovie = () => new Proxy({}, {
           get (target, key, receiver) {
-            return (...args) => hookd([key].concat(args))
+            return (...args) => hookd.apply(null, [key].concat(args))
           },
           set (target, key, receiver) {
           }
         })
       }
+    },
+    sendDanmu (content) {
+      serverSend({
+        col: '0',
+        content: content,
+        dy: '',
+        pid: '',
+        sender: '702735',
+        type: 'chatmessage'
+      })
     }
   }
 }

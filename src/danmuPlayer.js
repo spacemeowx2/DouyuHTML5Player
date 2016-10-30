@@ -24,6 +24,7 @@ function DanmuPlayerControls (listener) {
   this.onPlay = emptyFunc
   this.onReload = emptyFunc
   this.onVolume = emptyFunc
+  this.onSendDanmu = emptyFunc
   Object.keys(listener).forEach(key => this[key] = listener[key])
 }
 
@@ -34,11 +35,16 @@ function DanmuPlayer (controls, isSelf) {
   const playerCtrl = document.createElement('div')
   const danmuLayout = document.createElement('div')
   const videoBox = document.createElement('div')
-  const videoBoxBox = document.createElement('div')
+  const msgBox = document.createElement('div')
+  const msgInput = document.createElement('input')
   const videoEl = document.createElement('video')
 
   videoEl.style.width = videoEl.style.height = '100%'
 
+  msgInput.type = 'text'
+  msgInput.placeholder = '发送弹幕...'
+
+  msgBox.className = 'danmu-input'
   videoBox.className = 'danmu-video'
   playerCtrl.className = 'danmu-ctrl'
   danmuLayout.className = 'danmu-layout'
@@ -46,9 +52,11 @@ function DanmuPlayer (controls, isSelf) {
   playerContainer.className = 'danmu-container'
 
   videoBox.appendChild(videoEl)
+  msgBox.appendChild(msgInput)
   playerWrap.appendChild(videoBox)
   playerWrap.appendChild(playerCtrl)
   playerWrap.appendChild(danmuLayout)
+  playerWrap.appendChild(msgBox)
   playerContainer.appendChild(playerWrap)
 
   playerWrap.addEventListener('mousemove', event => {
@@ -62,6 +70,27 @@ function DanmuPlayer (controls, isSelf) {
       if (!hoverCtl) this._moveId = setTimeout(() => playerWrap.removeAttribute('hover'), 1000)
     } else {
       playerWrap.removeAttribute('hover')
+    }
+  })
+  this.inputing = false
+  playerWrap.addEventListener('click', event => {
+    if (event.path.indexOf(msgBox) !== -1) return
+    playerWrap.removeAttribute('inputing')
+    this.inputing = false
+  })
+  document.addEventListener('keydown', event => {
+    if (event.keyCode !== 13) return
+    if (playerWrap.getAttribute('fullpage') === null) return
+    this.inputing = !this.inputing
+    if (this.inputing) {
+      msgInput.value = ''
+      playerWrap.setAttribute('inputing', '')
+      msgInput.focus()
+    } else {
+      if (msgInput.value.length > 0) {
+        controls.onSendDanmu(msgInput.value)
+      }
+      playerWrap.removeAttribute('inputing')
     }
   })
 
@@ -190,9 +219,11 @@ DanmuPlayer.prototype.setTip = function setTip (tip) {
 }
 
 DanmuPlayer.prototype.tryPlay = function tryPlay () {
-  try {
-    this.video.play()
-  } catch (e) {}
+  if (this.playing) {
+    try {
+      this.video.play()
+    } catch (e) {}
+  }
 }
 
 DanmuPlayer.prototype.onFullScreenChange = function onFullScreenChange () {
@@ -216,17 +247,17 @@ DanmuPlayer.prototype.onFullpage = function onFullpage (fullScreen) {
   this.tryPlay()
 }
 
-DanmuPlayer.prototype.addListener = function addListener () {
-  window.addEventListener('message', event => {
-    if (event.source != window)
-      return
+// DanmuPlayer.prototype.addListener = function addListener () {
+//   window.addEventListener('message', event => {
+//     if (event.source != window)
+//       return
 
-    if (event.data.type && (event.data.type == "DANMU")) {
-      const data = event.data.data
-      this.onDanmu(data)
-    }
-  }, false)
-}
+//     if (event.data.type && (event.data.type == "DANMU")) {
+//       const data = event.data.data
+//       this.onDanmu(data)
+//     }
+//   }, false)
+// }
 
 DanmuPlayer.prototype.onDanmu = function onDanmu (pkg) {
   const example = {

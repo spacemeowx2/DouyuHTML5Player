@@ -41,6 +41,10 @@
   position: relative;
   background-color: #000;
 
+  .danmu-input {
+    display: none;
+  }
+
   .danmu-video {
     width: 100%;
     height: calc(~"100% - 42px");
@@ -94,12 +98,12 @@
         background-color: @fcolor;
       }
       &>input[type="range"] {
+        cursor: pointer;
         height: 20px;
         outline: none;
         background-color: transparent;
         -webkit-appearance: none;
         &::-webkit-slider-thumb {
-          cursor: pointer;
           -webkit-appearance: none;
           height: 12px;
           width: 12px;
@@ -230,6 +234,32 @@
   z-index: 100000;
   cursor: none;
 
+  .danmu-input {
+    position: absolute;
+    top: 75%;
+    width: 100%;
+    display: block;
+    transition: all .3s ease;
+    transform: translateY(50px);
+    opacity: 0;
+    &>input {
+      width: 300px;
+      margin: 0 auto;
+      display: block;
+      border: 0;
+      background: rgba(255,255,255,0.8);
+      padding: 5px;
+      color: #000;
+      &::-webkit-input-placeholder {
+        color: #888;
+      }
+    }
+  }
+  &[inputing] .danmu-input {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
   .danmu-video {
     height: 100%;
     transition: all .3s ease;
@@ -243,11 +273,11 @@
   &[hover] {
     cursor: default;
     .danmu-video {
-      height: calc(~"100% - 42px");
+      // height: calc(~"100% - 42px");
     }
   }
   &[hover] .danmu-ctrl { // , .danmu-ctrl:hover
     cursor: default;
-    opacity: 1;
+    opacity: 0.75;
   }
 }

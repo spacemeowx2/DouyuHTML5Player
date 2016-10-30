@@ -117,9 +117,16 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
         } else {
           player.volume = v
         }
+      },
+      onSendDanmu (txt) {
+        // TODO
+        window.postMessage({
+          type: "SENDANMU",
+          data: txt
+        }, "*")
       }
     }), pkg => pkg.uid == uid)
-    danmuPlayer.addListener()
+    // danmuPlayer.addListener()
     danmuPlayer.parsePic = s => s.replace(/\[emot:dy(.*?)\]/g, (_, i) => `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`)
     replace(danmuPlayer.el)
 
@@ -171,6 +178,7 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
     player.play()
     window.player = player
     window.danmu = danmuPlayer
+    return danmuPlayer
   })
 const getRoomId = () => {
   try {
@@ -190,4 +198,14 @@ loadVideo(getRoomId(), newPlayer => {
 
   roomVideo.removeChild(roomVideo.children[0])
   roomVideo.insertBefore(newPlayer, roomVideo.children[0])
+}).then(danmuPlayer => {
+  window.addEventListener('message', event => {
+    if (event.source != window)
+      return
+
+    if (event.data.type && (event.data.type == "DANMU")) {
+      const data = event.data.data
+      danmuPlayer.onDanmu(data)
+    }
+  }, false)
 })
