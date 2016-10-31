@@ -61,7 +61,31 @@ function douyuClient (ip, port, map) {
   function convertUnicodeCodePointsToUtf16Codes(unicode_codes) {
   }
   function utf8_to_ascii( str ) {
-    return unescape(encodeURIComponent(str))
+    // return unescape(encodeURIComponent(str))
+    const char2bytes = unicode_code => {
+      var utf8_bytes = [];
+      if (unicode_code < 0x80) {  // 1-byte
+        utf8_bytes.push(unicode_code);
+      } else if (unicode_code < (1 << 11)) {  // 2-byte
+        utf8_bytes.push((unicode_code >>> 6) | 0xC0);
+        utf8_bytes.push((unicode_code & 0x3F) | 0x80);
+      } else if (unicode_code < (1 << 16)) {  // 3-byte
+        utf8_bytes.push((unicode_code >>> 12) | 0xE0);
+        utf8_bytes.push(((unicode_code >> 6) & 0x3f) | 0x80);
+        utf8_bytes.push((unicode_code & 0x3F) | 0x80);
+      } else if (unicode_code < (1 << 21)) {  // 4-byte
+        utf8_bytes.push((unicode_code >>> 18) | 0xF0);
+        utf8_bytes.push(((unicode_code >> 12) & 0x3F) | 0x80);
+        utf8_bytes.push(((unicode_code >> 6) & 0x3F) | 0x80);
+        utf8_bytes.push((unicode_code & 0x3F) | 0x80);
+      }
+      return utf8_bytes;
+    }
+    let o = []
+    for (let i = 0; i < str.length; i++) {
+      o = o.concat(char2bytes(str.charCodeAt(i)))
+    }
+    return o.map(i => String.fromCharCode(i)).join('')
   }
   function ascii_to_utf8( str ) {
     // return decodeURIComponent(escape(str))
@@ -265,24 +289,26 @@ let douyuApi = function douyuApi (roomId) {
   })
   server = randDanmuServer()
   // 
+  const chatmsgHandler = (data, send, {ACJ, encode}) => {
+    if (blacklist.includes(data.uid)) {
+      console.log('black')
+    }
+    try {
+      window.postMsg({
+        type: "DANMU",
+        data: data
+      }, "*")
+    } catch (e) {
+      console.error('wtf', e)
+    }
+    ACJ('room_data_chat2', data)
+    if (window.BarrageReturn) {
+      window.BarrageReturn(encode(data))
+    }
+  }
   douyuClient(server.ip, server.port, {
-    chatmsg (data, send, {ACJ, encode}) {
-      if (blacklist.includes(data.uid)) {
-        console.log('black')
-      }
-      try {
-        window.postMsg({
-          type: "DANMU",
-          data: data
-        }, "*")
-      } catch (e) {
-        console.error('wtf', e)
-      }
-      ACJ('room_data_chat2', data)
-      if (window.BarrageReturn) {
-        window.BarrageReturn(encode(data))
-      }
-    },
+    chatmsg: chatmsgHandler,
+    chatres: chatmsgHandler,
     initcl: 'room_data_chatinit',
     dgb: 'room_data_giftbat1',
     dgn: 'room_data_giftbat1',
