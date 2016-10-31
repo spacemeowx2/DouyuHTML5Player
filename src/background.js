@@ -56,6 +56,17 @@ chrome.runtime.onConnect.addListener(port => {
         }
         // console.log('fetch send msg', outMsg)
         port.postMessage(outMsg)
+      }).catch(e => {
+        console.log(e)
+        port.postMessage({
+          method: msg.method,
+          err: {
+            name: e.name,
+            message: e.message,
+            stack: e.stack,
+            string: e.toString()
+          }
+        })
       })
     })
   }

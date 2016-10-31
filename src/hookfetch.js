@@ -7,14 +7,23 @@ function hookFetchCode () {
     }
     return out
   }
+  const hideHookStack = stack => {
+    return stack.replace(/^\s*at\s.*?hookfetch\.js:\d.*$\n/mg, '')
+  }
   const wrapPort = function wrapPort (port) {
     let curMethod = ''
     let curResolve = null
     let curReject = null
+    let stack = new Error().stack
     port.onMessage.addListener(msg => {
       if (msg.method === curMethod) {
         if (msg.err) {
-          curReject(msg.err)
+          // TODO 潜在安全性问题= =
+          let ctor = new Function('return ' + msg.err.name)()
+          let err = ctor(msg.err.message)
+          err.stack = hideHookStack(stack)
+          // console.log('fetch err', err)
+          curReject(err)
         } else {
           curResolve.apply(null, msg.args)
         }

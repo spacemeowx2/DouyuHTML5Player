@@ -43,9 +43,13 @@ function getSourceURL (rid, cdn = 'ws', rate = '0') {
   .then(videoInfo => {
     const baseUrl = videoInfo.data.rtmp_url
     const livePath = videoInfo.data.rtmp_live
-    const videoUrl = `${baseUrl}/${livePath}`
-    console.log('RoomId', rid, 'SourceURL:', videoUrl)
-    return videoUrl
+    if (baseUrl && livePath) {
+      const videoUrl = `${baseUrl}/${livePath}`
+      console.log('RoomId', rid, 'SourceURL:', videoUrl)
+      return videoUrl
+    } else {
+      throw new Error('未开播或获取失败')
+    }
   })
 }
 
@@ -184,11 +188,21 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
     return danmuPlayer
   })
 const getRoomId = () => {
+  let rid
   try {
     return /rid=(\d+)/.exec(document.querySelector('.feedback-report-button').href)[1]
   } catch (e) {}
   try {
-    return document.querySelector('.current').getAttribute('data-room_id')
+    rid = document.querySelector('.current').getAttribute('data-room_id')
+    if (rid) {
+      return rid
+    }
+  } catch (e) {}
+  try {
+    rid = /"room_id":(\d+)/.exec(document.head.innerHTML)[1]
+    if (rid !== '0') {
+      return rid
+    }
   } catch (e) {}
   throw new Error('未找到RoomId')
 }
