@@ -90,10 +90,11 @@ const createFlvjs = (videoUrl, onStat) => {
   player.on(flvjs.Events.STATISTICS_INFO, onStat)
   return player
 }
+flvjs.LoggingControl.forceGlobalTag = true
+flvjs.LoggingControl.enableAll = true
 const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwfApi(roomId)])
   .then(([videoUrl, swfApi]) => {
     console.log('swfApi', swfApi)
-    flvjs.LoggingControl.enableAll = true
     let player
     const reload = (url) => {
       player.unload()
