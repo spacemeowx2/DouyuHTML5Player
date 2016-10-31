@@ -174,6 +174,9 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
 
     player = createFlvjs(videoUrl, onStat) // flvjs.createPlayer(sourceConfig, playerConfig)
     player.attachMediaElement(danmuPlayer.video)
+
+    danmuPlayer.initControls()
+
     player.load()
     player.play()
     window.player = player

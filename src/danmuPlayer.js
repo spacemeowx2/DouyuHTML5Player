@@ -113,6 +113,7 @@ function DanmuPlayer (controls, isSelf) {
   this.el = playerContainer
   this.wrap = playerWrap
   this.dmLayout = danmuLayout
+  this.playerCtrl = playerCtrl
   this.curDanmu = []
   this.pool = []
   this.rows = []
@@ -130,7 +131,6 @@ function DanmuPlayer (controls, isSelf) {
     danmuLayout.appendChild(dm)
     this.pool.push(dm)
   }
-  this.initControls(playerCtrl)
 }
 
 DanmuPlayer.prototype.createVolume = function createVolume (cb) {
@@ -144,6 +144,7 @@ DanmuPlayer.prototype.createVolume = function createVolume (cb) {
   volume.appendChild(progress)
 
   input.value = localStorage.getItem('volume') || '100'
+  cb(input.value / 100)
   input.addEventListener('input', event => {
     progress.style.width = `${input.value}%`
     cb(input.value / 100)
@@ -153,7 +154,8 @@ DanmuPlayer.prototype.createVolume = function createVolume (cb) {
   return volume
 }
 
-DanmuPlayer.prototype.initControls = function initControls (bar) {
+DanmuPlayer.prototype.initControls = function initControls () {
+  let bar = this.playerCtrl
   const now = () => new Date().getTime()
   const addBtn = (cls, cb) => {
     const btn = document.createElement('div')
