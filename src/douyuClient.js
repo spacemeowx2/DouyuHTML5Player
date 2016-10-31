@@ -127,8 +127,8 @@ let douyuApi = function douyuApi (roomId) {
     const ports = [8601, 8602, 12601, 12602]
     const i = Math.floor(Math.random() * ports.length)
     return {
-      // ip: 'danmu.douyu.com',
-      ip: '211.91.140.131',
+      ip: 'danmu.douyu.com',
+      // ip: '211.91.140.131',
       port: ports[i]
     }
   }
