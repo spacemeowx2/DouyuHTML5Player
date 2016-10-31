@@ -308,7 +308,7 @@ let douyuApi = function douyuApi (roomId) {
   }
   douyuClient(server.ip, server.port, {
     chatmsg: chatmsgHandler,
-    chatres: chatmsgHandler,
+    chatres: 'room_data_chat2',
     initcl: 'room_data_chatinit',
     dgb: 'room_data_giftbat1',
     dgn: 'room_data_giftbat1',
@@ -413,6 +413,9 @@ let douyuApi = function douyuApi (roomId) {
         sender: '702735',
         type: 'chatmessage'
       })
+    },
+    serverSend (c) {
+      return serverSend(c)
     }
   }
 }

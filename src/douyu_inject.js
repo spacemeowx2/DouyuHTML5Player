@@ -42,4 +42,5 @@ waitObject([() => window.JSocket, () => window.md5, () => window.douyuApi]).then
     }
   }, false)
   //api.sendDanmu
+  window.api = api
 })
