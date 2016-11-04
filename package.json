@@ -6,6 +6,7 @@
   "scripts": {
     "dev:cs": "rollup --environment TARGET:content-script -w -c build/config.js",
     "dev:douyu": "rollup --environment TARGET:douyu-inject -w -c build/config.js",
+    "build": "node build/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -22,8 +23,10 @@
   },
   "devDependencies": {
     "rollup": "^0.36.3",
+    "rollup-plugin-buble": "^0.14.0",
     "rollup-plugin-commonjs": "^5.0.5",
     "rollup-plugin-node-resolve": "^2.0.0",
-    "rollup-watch": "^2.5.0"
+    "rollup-watch": "^2.5.0",
+    "uglify-js": "^2.7.4"
   }
 }
