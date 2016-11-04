@@ -11,10 +11,7 @@ function addCss (src, rel, type) {
   document.head.appendChild(link)
 }
 addCss('src/danmu.less', 'stylesheet/less', 'text/css')
-addScript('src/douyu_inject.js')
-addScript('src/douyuClient.js')
-addScript('libs/md5.js')
-addScript('libs/JSocket.js')
+addScript('dist/douyuInject.js')
 addScript('libs/less.min.js')
 
 function getSourceURL (rid, cdn = 'ws', rate = '0') {

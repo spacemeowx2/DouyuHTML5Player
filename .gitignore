@@ -1,2 +1,4 @@
 note/
+node_modules/
+dist/
 *.zip

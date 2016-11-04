@@ -40,6 +40,7 @@
         "src/backupFunction.js",
         "src/img/*",
         "src/sharedWorker/sharedWorker.html",
+        "dist/*",
         "*://*/*"
     ],
     
@@ -50,7 +51,6 @@
             ],
             "js": [
                 "libs/flv.min.js",
-                "libs/JSocket.js",
                 "libs/md5.js",
                 "src/hookfetch.js",
                 "src/danmuPlayer.js",

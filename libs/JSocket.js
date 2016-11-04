@@ -56,7 +56,7 @@ JSocket.init = function(src, swfloadedcb) {
 };
 JSocket.swfloaded = function() {
     if ( JSocket.swfloadedcb ) {
-        JSocket.swfloadedcb();
+        setTimeout(JSocket.swfloadedcb, 0)
     }
 };
 JSocket.handlers = new Array();
@@ -70,8 +70,9 @@ JSocket.connectHandler = function(socid) {
     JSocket.handlers[socid].connectHandler();
 };
 JSocket.dataHandler = function(socid, data) {
+    // setTimeout(() => JSocket.handlers[socid].dataHandler(atob(data)), 0)
     try {
-        JSocket.handlers[socid].dataHandler(atob(data));
+        JSocket.handlers[socid].dataHandler(atob(data))
     } catch (e) {
         console.error(e)
     }
@@ -103,3 +104,5 @@ JSocket.prototype = {
         JSocket.flashapi.flush(this.socid);
     }
 };
+window.JSocket = JSocket
+export default JSocket
