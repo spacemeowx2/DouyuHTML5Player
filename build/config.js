@@ -6,6 +6,10 @@ const builds = {
   'content-script': {
     entry: path.resolve(__dirname, '../src/entries/contentScript.js'),
     dest: path.resolve(__dirname, '../dist/contentScript.js'),
+    plugins: [
+      nodeResolve(),
+      commonjs()
+    ],
     format: 'umd'
   },
   'douyu-inject': {

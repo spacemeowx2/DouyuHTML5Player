@@ -76,21 +76,21 @@ function hookFetchCode () {
     })
   }
   function hookFetch () {
-    if (self.fetch !== bgFetch) {
-      self.fetch = bgFetch
+    if (fetch !== bgFetch) {
+      fetch = bgFetch
     }
   }
-  const oldBlob = self.Blob
+  const oldBlob = Blob
   const newBlob = function newBlob(a, b) {
     a[0] = `(${hookFetchCode})();${a[0]}`
     console.log('new blob', a, b)
     return new oldBlob(a, b)
   }
-  if(self.document !== undefined) {
-    if (self.Blob !== newBlob) {
-      self.Blob = newBlob
-    }
-  }
+  // if(self.document !== undefined) {
+  //   if (self.Blob !== newBlob) {
+  //     self.Blob = newBlob
+  //   }
+  // }
 
   hookFetch()
 }

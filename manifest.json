@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "minimum_chrome_version": "48",
+    "minimum_chrome_version": "49",
 
     "name": "斗鱼HTML5播放器",
     "description": "基于 flv.js 的斗鱼HTML5播放器.",
@@ -50,12 +50,13 @@
                 "*://*.douyu.com/*"
             ],
             "js": [
-                "libs/flv.min.js",
-                "libs/md5.js",
-                "src/hookfetch.js",
-                "src/danmuPlayer.js",
-                "src/playerMenu.js",
-                "src/cs.js"
+                // "libs/flv.min.js",
+                // "libs/md5.js",
+                // "src/hookfetch.js",
+                // "src/danmuPlayer.js",
+                // "src/playerMenu.js",
+                // "src/cs.js"
+                "dist/contentScript.js"
             ]
         },
         {

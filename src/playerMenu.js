@@ -1,5 +1,5 @@
-function bindMenu (el, menuItems) {
-  const createMenu = (x = 0, y = 0) => {
+export function bindMenu (el, menuItems) {
+  const createMenu = (x, y) => {
     const wrap = document.createElement('div')
     const menu = document.createElement('div')
     wrap.className = 'player-menu'
