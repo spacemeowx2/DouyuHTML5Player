@@ -228,7 +228,7 @@ let douyuApi = function douyuApi (roomId) {
   }
   const loginreq = () => {
     const rt = Math.round(new Date().getTime() / 1000)
-    const devid = getACF('did') // md5(Math.random()).toUpperCase()
+    const devid = getACF('devid') // md5(Math.random()).toUpperCase()
     const username = getACF('username')
     console.log('username', username, devid)
     return {
@@ -265,7 +265,7 @@ let douyuApi = function douyuApi (roomId) {
       setInterval(() => send(keepalive()), 30*1000)
       ACJ('room_data_login', data)
       ACJ('room_data_getdid', {
-        devid: getACF('did')
+        devid: getACF('devid')
       })
     },
     keeplive (data, send, {ACJ, rawString}) {

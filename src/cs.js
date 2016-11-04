@@ -96,6 +96,9 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
   .then(([videoUrl, swfApi]) => {
     console.log('swfApi', swfApi)
     let player
+    let currentCdn = 'ws'
+    let currentRate = '0'
+
     const reload = (url) => {
       player.unload()
       player.detachMediaElement()
@@ -112,8 +115,9 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
       onPause: () => player.pause(),
       onPlay: () => player.play(),
       onReload () {
-        getSourceURL(roomId).then(url => {
+        getSourceURL(roomId, currentCdn, currentRate).then(url => {
           reload(url)
+          danmuPlayer.reset()
         })
       },
       onVolume (v = -1) {
@@ -135,17 +139,16 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
     danmuPlayer.parsePic = s => s.replace(/\[emot:dy(.*?)\]/g, (_, i) => `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`)
     replace(danmuPlayer.el)
 
-    let currentCdn = 'ws'
-    let currentRate = '0'
     const cdnMenu = () => swfApi.cdnsWithName.map(i => {
       let suffix = ''
       if (i.cdn == currentCdn) suffix = ' √'
       return {
         text: i.name + suffix,
         cb () {
-          getSourceURL(roomId, i.cdn).then(url => {
-            currentCdn = i.cdn
+          currentCdn = i.cdn
+          getSourceURL(roomId, i.cdn, currentRate).then(url => {
             reload(url)
+            danmuPlayer.reset()
           })
         }
       }
@@ -167,9 +170,10 @@ const loadVideo = (roomId, replace) => Promise.all([getSourceURL(roomId), getSwf
         return {
           text: i.text + suffix,
           cb () {
+            currentRate = i.rate
             getSourceURL(roomId, currentCdn, i.rate).then(url => {
-              currentRate = i.rate
               reload(url)
+              danmuPlayer.reset()
             })
           }
         }

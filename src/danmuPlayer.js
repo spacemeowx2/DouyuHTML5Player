@@ -302,6 +302,11 @@ DanmuPlayer.prototype.calcRect = function calcRect () {
   return this.dmLayout.getBoundingClientRect()
 }
 
+DanmuPlayer.prototype.reset = function reset () {
+  this.playing = true
+  this.deferTime = 0
+}
+
 DanmuPlayer.prototype.doDefer = function doDefer () {
   const top = this.deferQueue[0]
   const now = new Date().getTime()
