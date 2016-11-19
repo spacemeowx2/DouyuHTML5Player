@@ -19,9 +19,10 @@ function addCss (src, rel, type) {
   link.href = chrome.runtime.getURL(src)
   document.head.appendChild(link)
 }
-addCss('src/danmu.less', 'stylesheet/less', 'text/css')
+// addCss('src/danmu.less', 'stylesheet/less', 'text/css')
+addCss('dist/danmu.css')
 addScript('dist/douyuInject.js')
-addScript('libs/less.min.js')
+// addScript('libs/less.min.js')
 
 const uid = getACF('uid')
 
@@ -79,7 +80,10 @@ const loadVideo = (roomId, replace) => {
     source.onChange = videoUrl => {
       danmuPlayer.src = videoUrl
     }
-    danmuPlayer.parsePic = s => s.replace(/\[emot:dy(.*?)\]/g, (_, i) => `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`)
+    danmuPlayer.parsePic = s => s.replace(
+      /\[emot:dy(.*?)\]/g,
+      (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
+    )
 
     let roomVideo = document.querySelector('#js-room-video')
     if (!roomVideo) {

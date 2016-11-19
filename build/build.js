@@ -3,7 +3,9 @@
 const fs = require('fs')
 const path = require('path')
 const rollup = require('rollup')
-const uglify = require('uglify-js')
+const copy = require('copy')
+const less = require('less')
+// const uglify = require('uglify-js')
 
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
@@ -26,23 +28,41 @@ function build (builds) {
     }).catch(logError)
   }
 
+  copy('src/img/*', 'dist/img', (err, file) => {
+    if (err) {
+      console.error(err)
+    }
+  })
+
+  copy.each(['background.js', 'start.js'], '../dist', {
+    cwd: 'src'
+  }, (err, file) => {
+    if (err) {
+      console.error(err)
+    }
+  })
+
+  read('src/danmu.less')
+    .then(lessSrc => less.render(lessSrc))
+    .then(css => write('dist/danmu.css', css.css))
+    .catch(logError)
   next()
 }
 
 function buildEntry (config) {
   return rollup.rollup(config).then(bundle => {
     const code = bundle.generate(config).code
-    const minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
-      fromString: true,
-      output: {
-        screw_ie8: true,
-        ascii_only: true
-      },
-      compress: {
-        pure_funcs: null// ['makeMap']
-      }
-    }).code
-    return write(config.dest, minified)
+    // const minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
+    //   fromString: true,
+    //   output: {
+    //     screw_ie8: true,
+    //     ascii_only: true
+    //   },
+    //   compress: {
+    //     pure_funcs: null// ['makeMap']
+    //   }
+    // }).code
+    return write(config.dest, code)
   })
 }
 
@@ -52,6 +72,15 @@ function write (dest, code) {
       if (err) return reject(err)
       console.log(path.relative(process.cwd(), dest) + ' ' + getSize(code))
       resolve()
+    })
+  })
+}
+
+function read (src) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(src, 'utf8', (err, data) => {
+      if (err) return reject(err)
+      resolve(data)
     })
   })
 }

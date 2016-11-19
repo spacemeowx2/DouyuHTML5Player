@@ -1,6 +1,6 @@
 {
   "name": "douyu-html5-player",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "斗鱼HTML5播放器",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,8 @@
     "md5": "^2.2.1"
   },
   "devDependencies": {
+    "copy": "^0.3.0",
+    "less": "^2.7.1",
     "rollup": "^0.36.3",
     "rollup-plugin-buble": "^0.14.0",
     "rollup-plugin-commonjs": "^5.0.5",
