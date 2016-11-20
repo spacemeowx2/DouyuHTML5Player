@@ -46,14 +46,16 @@
             "matches": [
                 "*://*.douyu.com/*"
             ],
-            "js": ["dist/douyuCS.js"],
-            "run_at": "document_start"
+            "js": [
+                "dist/contentScript.js"
+            ]
         },
         {
             "matches": [
-                "*://*.panda.tv/*"
+                "*://*.douyu.com/*"
             ],
-            "js": ["dist/pandaCS.js"]
+            "js": ["dist/start.js"],
+            "run_at": "document_start"
         }
     ]
 }

@@ -34,7 +34,8 @@ function build (builds) {
     }
   })
 
-  copy.each(['background.js', 'start.js'], '../dist', {
+//, 'start.js'
+  copy.each(['background.js'], '../dist', {
     cwd: 'src'
   }, (err, file) => {
     if (err) {

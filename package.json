@@ -4,8 +4,9 @@
   "description": "斗鱼HTML5播放器",
   "main": "index.js",
   "scripts": {
-    "dev:cs": "rollup --environment TARGET:content-script -w -c build/config.js",
-    "dev:douyu": "rollup --environment TARGET:douyu-inject -w -c build/config.js",
+    "dev:douyuc": "rollup --environment TARGET:douyu-cs -w -c build/config.js",
+    "dev:douyui": "rollup --environment TARGET:douyu-inject -w -c build/config.js",
+    "dev:pandac": "rollup --environment TARGET:panda-cs -w -c build/config.js",
     "build": "node build/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
