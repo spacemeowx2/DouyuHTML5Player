@@ -10,7 +10,7 @@ export function bindMenu (el, menuItems) {
     menu.style.top = `${y}px`
 
     menu.close = () => document.body.removeChild(wrap)
-    wrap.addEventListener('click', event => {
+    wrap.addEventListener('mousedown', event => {
       if (event.target === wrap) {
         document.body.removeChild(wrap)
       }
