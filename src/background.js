@@ -71,11 +71,3 @@ chrome.runtime.onConnect.addListener(port => {
     })
   }
 })
-const embed = document.createElement('embed')
-embed.src = 'libs/JSocket.swf'
-embed.wmode = 'transparent'
-embed.width = '1px'
-embed.height = '1px'
-embed.allowScriptAccess = 'always'
-embed.type = 'application/x-shockwave-flash'
-document.body.appendChild(embed)
