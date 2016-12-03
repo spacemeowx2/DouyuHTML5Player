@@ -32,7 +32,7 @@ const uid = getACF('uid')
 flvjs.LoggingControl.forceGlobalTag = true
 flvjs.LoggingControl.enableAll = true
 
-const makeMenu = (el, source) => {
+const makeMenu = (player, source) => {
   const cdnMenu = () => source.cdnsWithName.map(i => {
     let suffix = ''
     if (i.cdn == source.cdn) suffix = ' √'
@@ -65,7 +65,33 @@ const makeMenu = (el, source) => {
       }
     })
   }
-  bindMenu(el, () => [].concat(cdnMenu(), rateMenu()))
+
+  const transparentMenu = () => {
+    const opts = [{
+      text: '0%',
+      transparent: 0
+    }, {
+      text: '25%',
+      transparent: 25
+    }, {
+      text: '50%',
+      transparent: 50
+    }]
+    return [{
+      label: '弹幕透明度:'
+    }].concat(opts.map(i => {
+      let suffix = ''
+      if (i.transparent == player.transparent) suffix = ' √'
+      return {
+        text: i.text + suffix,
+        cb () {
+          player.transparent = i.transparent
+        }
+      }
+    }))
+  }
+  const dash = {}
+  bindMenu(player.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu()))
 }
 
 const loadVideo = (roomId, replace) => {
@@ -96,7 +122,7 @@ const loadVideo = (roomId, replace) => {
     roomVideo.removeChild(roomVideo.children[0])
     roomVideo.insertBefore(danmuPlayer.el, roomVideo.children[0])
 
-    makeMenu(danmuPlayer.video, source)
+    makeMenu(danmuPlayer, source)
 
     window.danmu = danmuPlayer
 

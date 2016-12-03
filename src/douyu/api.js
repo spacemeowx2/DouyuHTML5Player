@@ -35,6 +35,12 @@ export const getRoomId = () => {
       return rid
     }
   } catch (e) {}
+  try {
+    rid = /room_id=(\d+)/.exec(document.head.innerHTML)[1]
+    if (rid !== '0') {
+      return rid
+    }
+  } catch (e) {}
   throw new Error('未找到RoomId')
 }
 
@@ -205,6 +211,7 @@ let douyuApi = function (roomId) {
     memberinfores: 'room_data_info',
     ranklist: 'room_data_cqrank',
     rsm: 'room_data_brocast',
+    qausrespond: 'data_rank_score',
     loginres (data, send, {ACJ}) {
       console.log('loginres', data)
       send(keepalive())

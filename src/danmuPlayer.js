@@ -26,6 +26,13 @@ export function DanmuPlayerControls (listener) {
 }
 
 export class DanmuPlayer {
+  get transparent () {
+    return parseInt(window.localStorage.getItem('h5plr-transparent') || '0')
+  }
+  set transparent (val) {
+    window.localStorage.setItem('h5plr-transparent', val)
+    this.dmLayout.style.opacity = 1 - val / 100
+  }
   onStat (e) {
     this.setTip(parseInt(e.speed*10)/10 + 'KB/s')
   }
@@ -175,6 +182,7 @@ export class DanmuPlayer {
       danmuLayout.appendChild(dm)
       this.pool.push(dm)
     }
+    this.transparent = this.transparent
   }
   createVolume (cb) {
     const volume = document.createElement('div')
