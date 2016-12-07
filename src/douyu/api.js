@@ -205,15 +205,50 @@ let douyuApi = function (roomId) {
       tick: Math.round(new Date().getTime() / 1000)
     }
   }
+  const reqOnlineGift = (loginres) => {
+    return {
+      type: 'reqog',
+      uid: loginres.userid
+    }
+  }
+  const onchatmsg = (data, send, {ACJ, encode}) => {
+    if (blacklist.includes(data.uid)) {
+      console.log('black')
+      return
+    }
+    try {
+      window.postMsg({
+        type: "DANMU",
+        data: data
+      }, "*")
+    } catch (e) {
+      console.error('wtf', e)
+    }
+    ACJ('room_data_chat2', data)
+    if (window.BarrageReturn) {
+      window.BarrageReturn(encode(data))
+    }
+  }
 
   miscServer.map = {
+    chatmsg: onchatmsg,
+    qtlr: 'room_data_tasklis',
     initcl: 'room_data_chatinit',
     memberinfores: 'room_data_info',
     ranklist: 'room_data_cqrank',
     rsm: 'room_data_brocast',
     qausrespond: 'data_rank_score',
+    resog (data, send, {ACJ}) {
+      // lev@=1/lack_time[t]@=0/dl@=2/
+      ACJ('room_data_chest', {
+        lev: data.lv,
+        lack_time: data.t,
+        dl: data.dl
+      })
+    },
     loginres (data, send, {ACJ}) {
       console.log('loginres', data)
+      send(reqOnlineGift(data))
       send(keepalive())
       setInterval(() => send(keepalive()), 30*1000)
       ACJ('room_data_login', data)
@@ -237,24 +272,9 @@ let douyuApi = function (roomId) {
       console.log('ms', data)
     }
   }
+  
   danmuServer.map = {
-    chatmsg (data, send, {ACJ, encode}) {
-      if (blacklist.includes(data.uid)) {
-        console.log('black')
-      }
-      try {
-        window.postMsg({
-          type: "DANMU",
-          data: data
-        }, "*")
-      } catch (e) {
-        console.error('wtf', e)
-      }
-      ACJ('room_data_chat2', data)
-      if (window.BarrageReturn) {
-        window.BarrageReturn(encode(data))
-      }
-    },
+    chatmsg: onchatmsg,
     chatres: 'room_data_chat2',
     initcl: 'room_data_chatinit',
     dgb: 'room_data_giftbat1',
