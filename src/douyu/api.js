@@ -9,7 +9,11 @@ function ACJ (id, data) {
   if (typeof data == 'object') {
     data = douyuClient.douyuEncode(data)
   }
-  _ACJ_([id, data])
+  try {
+    _ACJ_([id, data])
+  } catch (e) {
+    console.error(id, data, e)
+  }
 }
 export const getACF = key => {
   try {

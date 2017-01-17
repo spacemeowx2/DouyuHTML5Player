@@ -95,52 +95,66 @@ const makeMenu = (player, source) => {
 }
 
 const loadVideo = (roomId, replace) => {
-    const source = new DouyuSource(roomId)
-    const danmuPlayer = new DanmuPlayer(new DanmuPlayerControls({
-      onReload: () => source.getUrl(),
-      onSendDanmu (txt) {
-        window.postMessage({
-          type: "SENDANMU",
-          data: txt
-        }, "*")
-      }
-    }), pkg => pkg.uid == uid)
-
-    source.onChange = videoUrl => {
-      danmuPlayer.src = videoUrl
+  const source = new DouyuSource(roomId)
+  const danmuPlayer = new DanmuPlayer(new DanmuPlayerControls({
+    onReload: () => source.getUrl(),
+    onSendDanmu (txt) {
+      window.postMessage({
+        type: "SENDANMU",
+        data: txt
+      }, "*")
     }
-    danmuPlayer.parsePic = s => s.replace(
-      /\[emot:dy(.*?)\]/g,
-      (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
-    )
+  }), pkg => pkg.uid == uid)
 
-    let roomVideo = document.querySelector('#js-room-video')
-    if (!roomVideo) {
-      roomVideo = document.querySelector('.live_site_player_container')
-    }
+  source.onChange = videoUrl => {
+    danmuPlayer.src = videoUrl
+  }
+  danmuPlayer.parsePic = s => s.replace(
+    /\[emot:dy(.*?)\]/g,
+    (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
+  )
 
-    roomVideo.removeChild(roomVideo.children[0])
-    roomVideo.insertBefore(danmuPlayer.el, roomVideo.children[0])
+  // let roomVideo = document.querySelector('#js-room-video')
+  // if (!roomVideo) {
+  //   roomVideo = document.querySelector('.live_site_player_container')
+  // }
 
-    makeMenu(danmuPlayer, source)
+  // roomVideo.removeChild(roomVideo.children[0])
+  // roomVideo.insertBefore(danmuPlayer.el, roomVideo.children[0])
+  replace(danmuPlayer.el)
 
-    window.danmu = danmuPlayer
+  makeMenu(danmuPlayer, source)
 
-    return source.getUrl().then(() => danmuPlayer)
+  window.danmu = danmuPlayer
+
+  return source.getUrl().then(() => danmuPlayer)
 }
 
-loadVideo(getRoomId()).then(danmuPlayer => {
-  window.addEventListener('message', event => {
-    if (event.source != window)
-      return
 
-    if (event.data.type && (event.data.type == "DANMU")) {
-      const data = event.data.data
-      danmuPlayer.onDanmu(data)
+let danmuPlayer = null
+window.addEventListener('message', event => {
+  if (event.source != window)
+    return
+
+  if (event.data.type) {
+    const data = event.data.data
+    switch (event.data.type) {
+      case 'DANMU':
+        danmuPlayer && danmuPlayer.onDanmu(data)
+        break
+      case 'VIDEOID':
+        // getRoomId()
+        console.log('onVideoId', data)
+        let ctr = document.querySelector(`#${data.id}`)
+        loadVideo(data.roomId, el => {
+          ctr.parentNode.replaceChild(el, ctr)
+        }).then(dp => {
+          danmuPlayer = dp
+        })
+        break
     }
-  }, false)
-})
+  }
+}, false)
 
 }
-
 document.addEventListener('DOMContentLoaded', onload)
