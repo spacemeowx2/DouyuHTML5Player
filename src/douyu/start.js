@@ -8,7 +8,9 @@ var blob = new Blob([`
     }
   }
   function getParam(flash, name) {
-    for (let param of flash.children) {
+    const children = flash.children
+    for (let i=0; i<children.length; i++) {
+      const param = children[i]
       if (param.name == name) {
         return param.value
       }

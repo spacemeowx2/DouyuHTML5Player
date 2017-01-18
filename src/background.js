@@ -40,7 +40,9 @@ chrome.runtime.onConnect.addListener(port => {
       } else if (msg.method === 'reader.read') {
         chain = chain.then(() => reader.read()).then(r => {
           // console.log('read', r)
-          r.value = Array.from(r.value)
+          if (r.done === false) {
+            r.value = Array.from(r.value)
+          }
           return r
         })
       } else if (msg.method === 'reader.cancel') {

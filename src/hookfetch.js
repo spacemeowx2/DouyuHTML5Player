@@ -62,7 +62,9 @@ function hookFetchCode () {
           return {
             read () {
               return requireReader(() => port('reader.read')).then(r => {
-                r.value = new Uint8Array(r.value)
+                if (r.done == false) {
+                  r.value = new Uint8Array(r.value)
+                }
                 return r
               })
             },

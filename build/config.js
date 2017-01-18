@@ -3,7 +3,7 @@ const commonjs = require('rollup-plugin-commonjs')
 const buble = require('rollup-plugin-buble')
 const path = require('path')
 
-const sites = ['douyu', 'panda']
+const sites = ['douyu']
 let builds = {}
 sites.forEach(site => {
   builds[`${site}-cs`] = () => genConfig({
