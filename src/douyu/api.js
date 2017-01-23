@@ -196,8 +196,9 @@ let douyuApi = function (roomId) {
       roomid: roomId,
       devid: devid,
       rt: rt,
-      vk: md5(`${rt}7oE9nPEG9xXV69phU31FYCLUagKeYtsF${devid}`),
-      ver: '2016102501',
+      vk: md5(`${rt}r5*^5;}2#\${XF[h+;'./.Q'1;,-]f'p[${devid}`),
+      ver: '20150929',
+      aver: '2017012111',
       biz: getACF('biz'),
       stk: getACF('stk'),
       ltkid: getACF('ltkid')
