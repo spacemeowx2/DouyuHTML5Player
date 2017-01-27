@@ -108,8 +108,10 @@
         outline: none;
         background-color: transparent;
         -webkit-appearance: none;
-        &::-webkit-slider-thumb {
+        -moz-appearance: none;
+        .thumb {
           -webkit-appearance: none;
+          -moz-appearance: none;
           height: 12px;
           width: 12px;
           margin-top: -5px;
@@ -118,9 +120,21 @@
           position: relative;
           box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
         }
-        &::-webkit-slider-runnable-track {
+        &::-webkit-slider-thumb {
+          .thumb
+        }
+        &::-moz-range-thumb {
+          .thumb
+        }
+        .track {
           height: 2px;
           background-color: @bgcolor;
+        }
+        &::-webkit-slider-runnable-track {
+          .track
+        }
+        &::-moz-range-track {
+          .track
         }
       }
     }

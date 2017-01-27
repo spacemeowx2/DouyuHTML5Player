@@ -20,6 +20,14 @@ function exitFullscreen() {
     de.webkitCancelFullScreen();
   }
 }
+
+function findInParent (node, toFind) {
+  while ((node !== toFind) && (node !== null)) {
+    node = node.parentElement
+  }
+  return node !== null
+}
+
 export function DanmuPlayerControls (listener) {
   this.onReload = emptyFunc
   this.onSendDanmu = emptyFunc
@@ -109,7 +117,8 @@ export class DanmuPlayer {
     playerContainer.appendChild(playerWrap)
 
     playerWrap.addEventListener('mousemove', event => {
-      const hoverCtl = event.path.indexOf(playerCtrl) !== -1
+      // const hoverCtl = event.path.indexOf(playerCtrl) !== -1
+      const hoverCtl = findInParent(event.target, playerCtrl)
       if (event.offsetY - playerWrap.lastY == 0) return
       playerWrap.lastY = event.offsetY
       let height = playerWrap.getBoundingClientRect().height
@@ -123,7 +132,8 @@ export class DanmuPlayer {
     })
     this.inputing = false
     playerWrap.addEventListener('click', event => {
-      if (event.path.indexOf(msgBox) !== -1) return
+      // if (event.path.indexOf(msgBox) !== -1) return
+      if (findInParent(event.target, msgBox)) return
       playerWrap.removeAttribute('inputing')
       this.inputing = false
     })
