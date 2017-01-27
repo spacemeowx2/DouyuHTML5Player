@@ -1,6 +1,6 @@
 {
   "name": "douyu-html5-player",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "斗鱼HTML5播放器",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "author": "space",
   "license": "MIT",
   "dependencies": {
-    "flv.js": "^1.0.0",
+    "flv.js": "^1.1.0",
     "less": "^2.7.1",
     "md5": "^2.2.1"
   },

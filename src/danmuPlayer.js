@@ -1,3 +1,4 @@
+import flvjs from 'flv.js'
 const emptyFunc = () => null
 const requestFullScreen = () => {
   var de = document.documentElement;

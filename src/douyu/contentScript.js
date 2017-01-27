@@ -1,8 +1,7 @@
 //rlcn
-import './start'
+//import './start'
 import '../hookfetch'
-import 'flv.js'
-const flvjs = window.flvjs
+import flvjs from 'flv.js'
 import { DanmuPlayerControls, DanmuPlayer } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
@@ -157,4 +156,5 @@ window.addEventListener('message', event => {
 }, false)
 
 }
-document.addEventListener('DOMContentLoaded', onload)
+//document.addEventListener('DOMContentLoaded', onload)
+onload()
