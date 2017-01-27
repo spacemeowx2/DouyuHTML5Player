@@ -8,7 +8,12 @@
     "dev:douyui": "rollup --environment TARGET:douyu-inject -w -c build/config.js",
     "dev:pandac": "rollup --environment TARGET:panda-cs -w -c build/config.js",
     "build": "node build/build.js",
+    "pack": "node build/pack.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spacemeowx2/DouyuHTML5Player"
   },
   "keywords": [
     "douyu",
@@ -23,6 +28,7 @@
     "md5": "^2.2.1"
   },
   "devDependencies": {
+    "archiver": "^1.3.0",
     "copy": "^0.3.0",
     "less": "^2.7.1",
     "rollup": "^0.36.3",

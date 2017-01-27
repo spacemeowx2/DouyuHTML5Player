@@ -24,3 +24,10 @@
 
 具体原理请见我的 [blog](http://blog.imspace.cn/2016/10/29/DouyuHTML5Player/)
 
+# 构建
+
+1. `npm install`
+
+2. `npm run build`
+
+3. `npm run pack` 在 versions 文件夹查看 zip 文件
