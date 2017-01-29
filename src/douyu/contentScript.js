@@ -9,21 +9,38 @@ import { getACF, getRoomId } from './api'
 
 const onload = () => {
 
+function getURL (src) {
+  if (src.substr(0, 5) !== 'blob:') {
+    src = chrome.runtime.getURL(src)
+  }
+  return src
+}
 function addScript (src) {
   var script = document.createElement('script')
-  script.src = chrome.runtime.getURL(src)
+  // blob:
+  script.src = getURL(src)
   document.head.appendChild(script)
 }
 function addCss (src, rel, type) {
   var link = document.createElement('link')
   link.rel = rel || 'stylesheet'
   link.type = type || 'text/css'
-  link.href = chrome.runtime.getURL(src)
+  link.href = getURL(src)
   document.head.appendChild(link)
 }
+function createBlobURL (content, type) {
+  var blob = new Blob([content], { type })
+  return URL.createObjectURL(blob)
+}
 // addCss('src/danmu.less', 'stylesheet/less', 'text/css')
-addCss('dist/danmu.css')
-addScript('dist/douyuInject.js')
+if (window.__space_inject) {
+  const {script, css} = window.__space_inject
+  addCss(createBlobURL(css, 'text/css'))
+  addScript(createBlobURL(script, 'text/javascript'))
+} else {
+  addCss('dist/danmu.css')
+  addScript('dist/douyuInject.js')
+}
 // addScript('libs/less.min.js')
 
 const uid = getACF('uid')

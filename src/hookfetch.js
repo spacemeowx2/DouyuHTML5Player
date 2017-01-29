@@ -96,4 +96,6 @@ function hookFetchCode () {
 
   hookFetch()
 }
-hookFetchCode()
+if (typeof chrome !== 'undefined') {
+  hookFetchCode()
+}
