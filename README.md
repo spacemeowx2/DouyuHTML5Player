@@ -10,7 +10,9 @@
 
 [Chrome 应用商店](https://chrome.google.com/webstore/detail/hbocinidadgpnbcamhjgfbgiebhpnmfj)
 
-要求 Chrome 版本大于 48 (仅在54版本测试过)
+[Greasy Fork](https://greasyfork.org/scripts/26901) (Firefox)
+
+要求 Chrome 版本大于等于 49 (仅在54+版本测试过)
 
 打开斗鱼的直播间, 如果没有错误, 播放器就已经被自动替换.
 

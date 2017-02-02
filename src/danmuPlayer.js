@@ -69,12 +69,16 @@ export class DanmuPlayer {
     player.play()
     return player
   }
-  set src (val) {
-    this._src = val
+  stop () {
     if (this.player) {
       this.player.unload()
       this.player.detachMediaElement()
+      this.player = null
     }
+  }
+  set src (val) {
+    this._src = val
+    this.stop()
     let player = this.createFlvjs()
     this.player = player
     if (!this._ctrl) {
@@ -163,6 +167,10 @@ export class DanmuPlayer {
       if (!this.fullscreen) {
         this.onFullpage()
       }
+    })
+
+    window.addEventListener('unload', event => {
+      this.stop()
     })
 
     this.parsePic = i => i

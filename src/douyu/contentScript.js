@@ -37,6 +37,7 @@ if (window.__space_inject) {
   const {script, css} = window.__space_inject
   addCss(createBlobURL(css, 'text/css'))
   addScript(createBlobURL(script, 'text/javascript'))
+  window.__space_inject = null
 } else {
   addCss('dist/danmu.css')
   addScript('dist/douyuInject.js')
