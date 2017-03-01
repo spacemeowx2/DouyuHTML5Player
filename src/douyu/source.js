@@ -4,13 +4,13 @@ import {stupidMD5} from './blackbox'
 function getSourceURL (rid, cdn, rate) {
   const API_KEY = 'a2053899224e8a92974c729dceed1cc99b3d8282'
   const tt = Math.round(new Date().getTime() / 60 / 1000)
-  const did = stupidMD5(Math.random().toString()).toUpperCase()
+  const did = md5(Math.random().toString()).toUpperCase()
   const signContent = [rid, did, API_KEY, tt].join('')
-  const sign = md5(signContent)
+  const sign = stupidMD5(signContent)
   let body = {
     'cdn': cdn,
     'rate': rate,
-    'ver': '2016102501',
+    'ver': '2017022801',
     'tt': tt,
     'did': did,
     'sign': sign
