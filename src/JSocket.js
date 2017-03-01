@@ -41,6 +41,7 @@ JSocket.init = function(src, swfloadedcb) {
     div.style.width = '1px'
     div.style.height = '1px'
     document.body.appendChild(div)
+    JSocket.el = div
     div.innerHTML = flash
     var api = document.querySelector('#jsocket')
     console.log(div, api)

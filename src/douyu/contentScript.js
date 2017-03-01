@@ -1,3 +1,4 @@
+//_ACJ_(['room_bus_pagescr']) // 难看的网页全屏
 //rlcn
 //import './start'
 import '../hookfetch'
