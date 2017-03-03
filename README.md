@@ -8,6 +8,8 @@
 
 # 使用
 
+**不要**使用 Chrome 直接加载本文件夹, 本扩展程序需要构建后才能使用.
+
 [Chrome 应用商店](https://chrome.google.com/webstore/detail/hbocinidadgpnbcamhjgfbgiebhpnmfj)
 
 [Greasy Fork](https://greasyfork.org/scripts/26901) (Firefox)
