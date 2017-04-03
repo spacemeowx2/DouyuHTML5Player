@@ -1,13 +1,14 @@
-import md5 from 'md5'
+import md5 from '../md5'
+import {BaseSource} from '../source'
 import {stupidMD5} from './blackbox'
 
-function getSourceURL (rid, cdn, rate) {
+async function getSourceURL (rid: string, cdn: string, rate: string) {
   const API_KEY = 'a2053899224e8a92974c729dceed1cc99b3d8282'
   const tt = Math.round(new Date().getTime() / 60 / 1000)
   const did = md5(Math.random().toString()).toUpperCase()
   const signContent = [rid, did, API_KEY, tt].join('')
   const sign = stupidMD5(signContent)
-  let body = {
+  let body: any = {
     'cdn': cdn,
     'rate': rate,
     'ver': '2017022801',
@@ -16,45 +17,47 @@ function getSourceURL (rid, cdn, rate) {
     'sign': sign
   }
   body = Object.keys(body).map(key => `${key}=${encodeURIComponent(body[key])}`).join('&')
-  return fetch(`https://www.douyu.com/lapi/live/getPlay/${rid}`, {
+  const res = await fetch(`https://www.douyu.com/lapi/live/getPlay/${rid}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
     body: body
   })
-  .then(res => res.json())
-  .then(videoInfo => {
-    const baseUrl = videoInfo.data.rtmp_url
-    const livePath = videoInfo.data.rtmp_live
-    if (baseUrl && livePath) {
-      const videoUrl = `${baseUrl}/${livePath}`
-      console.log('RoomId', rid, 'SourceURL:', videoUrl)
-      return videoUrl
-    } else {
-      throw new Error('未开播或获取失败')
-    }
-  })
+  const videoInfo = await res.json()
+  const baseUrl = videoInfo.data.rtmp_url
+  const livePath = videoInfo.data.rtmp_live
+  if (baseUrl && livePath) {
+    const videoUrl = `${baseUrl}/${livePath}`
+    console.log('RoomId', rid, 'SourceURL:', videoUrl)
+    return videoUrl
+  } else {
+    throw new Error('未开播或获取失败')
+  }
 }
 
-const getSwfApi = (rid) => {
+async function getSwfApi (rid: string) {
   const API_KEY = 'bLFlashflowlad92'
   const tt = Math.round(new Date().getTime() / 60 / 1000)
   const signContent = [rid, API_KEY, tt].join('')
   const sign = md5(signContent)
-  return fetch(`http://www.douyutv.com/swf_api/room/${rid}?cdn=&nofan=yes&_t=${tt}&sign=${sign}`)
-  .then(res => res.json())
-  .then(r => r.data)
+  const res = await fetch(`http://www.douyutv.com/swf_api/room/${rid}?cdn=&nofan=yes&_t=${tt}&sign=${sign}`)
+  const obj = await res.json()
+  return await obj.data
 }
 
-export class DouyuSource {
-  constructor (roomId) {
+export class DouyuSource extends BaseSource {
+  roomId: string
+  swfApi: any
+  private _cdn: string
+  private _rate: string
+  constructor (roomId: string) {
+    super()
     this._cdn = 'ws'
     this._rate = '0'
     this.url = ''
     this.roomId = roomId
     this.swfApi = null
-    this.onChange = () => null
   }
   set cdn (val) {
     this._cdn = val
@@ -80,20 +83,13 @@ export class DouyuSource {
       }]
     }
   }
-  getUrl () {
-    let chain = Promise.resolve()
+  async getUrl () {
     if (!this.swfApi) {
-      chain = chain.then(() => getSwfApi(this.roomId)).then(swfApi => {
-        this.swfApi = swfApi
-        this._cdn = swfApi.cdns[0]
-      })
+      this.swfApi = await getSwfApi(this.roomId)
+      this._cdn = this.swfApi.cdns[0]
     }
-    chain = chain.then(() => getSourceURL(this.roomId, this.cdn, this.rate))
-      .then(url => {
-        this.url = url
-        this.onChange(url)
-        return url
-      })
-    return chain
+    let url = await getSourceURL(this.roomId, this.cdn, this.rate)
+    this.url = url
+    return url
   }
 }

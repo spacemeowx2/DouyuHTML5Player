@@ -2,38 +2,21 @@
 //rlcn
 //import './start'
 import '../hookfetch'
-import flvjs from 'flv.js'
-import { DanmuPlayerControls, DanmuPlayer } from '../danmuPlayer'
+import 'flv.js'
+import { DanmuPlayer, PlayerUI } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
-import { getACF, getRoomId } from './api'
+import { getACF } from './api'
+import {getURL, addScript, addCss, createBlobURL} from '../utils'
 
+declare var window: {
+  __space_inject: {
+    script: string,
+    css: string
+  },
+  [key: string]: any
+} & Window
 const onload = () => {
-
-function getURL (src) {
-  if (src.substr(0, 5) !== 'blob:') {
-    src = chrome.runtime.getURL(src)
-  }
-  return src
-}
-function addScript (src) {
-  var script = document.createElement('script')
-  // blob:
-  script.src = getURL(src)
-  document.head.appendChild(script)
-}
-function addCss (src, rel, type) {
-  var link = document.createElement('link')
-  link.rel = rel || 'stylesheet'
-  link.type = type || 'text/css'
-  link.href = getURL(src)
-  document.head.appendChild(link)
-}
-function createBlobURL (content, type) {
-  var blob = new Blob([content], { type })
-  return URL.createObjectURL(blob)
-}
-// addCss('src/danmu.less', 'stylesheet/less', 'text/css')
 if (window.__space_inject) {
   const {script, css} = window.__space_inject
   addCss(createBlobURL(css, 'text/css'))
@@ -50,8 +33,56 @@ const uid = getACF('uid')
 flvjs.LoggingControl.forceGlobalTag = true
 flvjs.LoggingControl.enableAll = true
 
-const makeMenu = (player, source) => {
-  const cdnMenu = () => source.cdnsWithName.map(i => {
+class DouyuPlayerUI extends PlayerUI {
+  
+}
+class DouyuDanmuPlayer extends DanmuPlayer {
+  source: DouyuSource
+  constructor (roomId: string) {
+    const source = new DouyuSource(roomId)
+    source.onChange = videoUrl => {
+      this.src = videoUrl
+    }
+    super({
+      getSrc: () => source.getUrl(),
+      onSendDanmu (txt) {
+        window.postMessage({
+          type: "SENDANMU",
+          data: txt
+        }, "*")
+      }
+    })
+  }
+  initUI () {
+    this.ui = new DouyuPlayerUI(this, this.state)
+  }
+  onDanmuPkg (pkg: any) {
+    const example = {
+      "type": "chatmsg",
+      "rid": "510541",
+      "ct": "1", // 酬勤
+      "uid": "59839409",
+      "nn": "登辛",
+      "txt": "3ds没有鼓棒先生吗",
+      "cid": "ce554df5bf2841e41459070000000000",
+      "ic": "avatar/face/201607/27/12d23d30a9a7790e955d7affc54335ad",
+      "level": "17",
+      "gt": "2", //
+      "rg": "4", //
+      "el": "eid@A=1500000005@Setp@A=1@Ssc@A=1@Sef@A=0@S/"
+    }
+    const getColor = (c: number) => ["#ff0000", "#1e87f0", "#7ac84b", "#ff7f00", "#9b39f4", "#ff69b4"][c-1]
+    if (pkg.txt.length > 0) {
+      let cls = []
+      let color = getColor(pkg.col) || '#ffffff'
+      if (pkg.uid === uid) cls.push('danmu-self')
+      this.fireDanmu(pkg.txt, color, cls)
+    }
+  }
+}
+
+const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
+  const cdnMenu = () => source.cdnsWithName.map((i: any) => {
     let suffix = ''
     if (i.cdn == source.cdn) suffix = ' √'
     return {
@@ -99,57 +130,39 @@ const makeMenu = (player, source) => {
       label: '弹幕透明度:'
     }].concat(opts.map(i => {
       let suffix = ''
-      if (i.transparent == player.transparent) suffix = ' √'
+      if (i.transparent == player.ui.transparent) suffix = ' √'
       return {
         text: i.text + suffix,
         cb () {
-          player.transparent = i.transparent
-        }
+          player.ui.transparent = i.transparent
+        },
+        label: null
       }
     }))
   }
   const dash = {}
-  bindMenu(player.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu()))
+  bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu()))
 }
 
-const loadVideo = (roomId, replace) => {
-  const source = new DouyuSource(roomId)
-  const danmuPlayer = new DanmuPlayer(new DanmuPlayerControls({
-    onReload: () => source.getUrl(),
-    onSendDanmu (txt) {
-      window.postMessage({
-        type: "SENDANMU",
-        data: txt
-      }, "*")
-    }
-  }), pkg => pkg.uid == uid)
+const loadVideo = (roomId: string, replace: (el: Element) => void) => {
+  const danmuPlayer = new DouyuDanmuPlayer(roomId)
 
-  source.onChange = videoUrl => {
-    danmuPlayer.src = videoUrl
-  }
   danmuPlayer.parsePic = s => s.replace(
     /\[emot:dy(.*?)\]/g,
     (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
   )
 
-  // let roomVideo = document.querySelector('#js-room-video')
-  // if (!roomVideo) {
-  //   roomVideo = document.querySelector('.live_site_player_container')
-  // }
+  replace(danmuPlayer.ui.el)
 
-  // roomVideo.removeChild(roomVideo.children[0])
-  // roomVideo.insertBefore(danmuPlayer.el, roomVideo.children[0])
-  replace(danmuPlayer.el)
-
-  makeMenu(danmuPlayer, source)
+  makeMenu(danmuPlayer, danmuPlayer.source)
 
   window.danmu = danmuPlayer
 
-  return source.getUrl().then(() => danmuPlayer)
+  return danmuPlayer.source.getUrl().then(() => danmuPlayer)
 }
 
 
-let danmuPlayer = null
+let danmuPlayer: DouyuDanmuPlayer = null
 window.addEventListener('message', event => {
   if (event.source != window)
     return
@@ -158,7 +171,7 @@ window.addEventListener('message', event => {
     const data = event.data.data
     switch (event.data.type) {
       case 'DANMU':
-        danmuPlayer && danmuPlayer.onDanmu(data)
+        danmuPlayer && danmuPlayer.onDanmuPkg(data)
         break
       case 'VIDEOID':
         // getRoomId()

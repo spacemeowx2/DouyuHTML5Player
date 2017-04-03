@@ -1,14 +1,18 @@
-import JSocket from '../JSocket'
-import { douyuApi, getRoomId } from './api'
+import {JSocket} from '../JSocket'
+import { douyuApi, DouyuAPI } from './api'
+import {onMessage, sendMessage} from '../utils'
 
+declare var window: {
+  [key: string]: any
+} & Window
 window.postMsg = window.postMessage
-function hookFunc (obj, funcName, newFunc) {
+function hookFunc (obj: any, funcName: string, newFunc: (func: Function, args: any[]) => any) {
   var old = obj[funcName]
   obj[funcName] = function () {
     return newFunc.call(this, old.bind(this), Array.from(arguments))
   }
 }
-function getParam(flash, name) {
+function getParam(flash: any, name: string) {
   const children = flash.children
   for (let i=0; i<children.length; i++) {
     const param = children[i]
@@ -18,7 +22,7 @@ function getParam(flash, name) {
   }
   return ''
 }
-function getRoomIdFromFlash(s) {
+function getRoomIdFromFlash(s: string) {
   return s.split('&').filter(i => i.substr(0,6) == 'RoomId')[0].split('=')[1]
 }
 // var wwwtttfff=0
@@ -50,22 +54,13 @@ hookFunc(document, 'createElement', (old, args) => {
   return ret
 })
 
-window.addEventListener('message', event => {
-  if (event.source != window)
-    return
-
-  if (event.data.type) {
-    const data = event.data.data
-    switch (event.data.type) {
-      case 'SENDANMU':
-        api.sendDanmu(data)
-        break
-      case 'VIDEOID':
-        JSocket.init('https://imspace.applinzi.com/player/JSocket.swf', () => douyuApi(data.roomId).then(api => {
-          api.hookExe()
-          window.api = api
-        }))
-        break
-    }
-  }
-}, false)
+let api: DouyuAPI
+onMessage('VIDEOID', async data => {
+  await JSocket.init('https://imspace.applinzi.com/player/JSocket.swf')
+  api = await douyuApi(data.roomId)
+  api.hookExe()
+  window.api = api
+})
+onMessage('SENDANMU', data => {
+  api.sendDanmu(data)
+})

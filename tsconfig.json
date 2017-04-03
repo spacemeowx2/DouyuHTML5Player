@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es6"],
+    "module": "es2015",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "./dist/ts/",
+    "sourceMap": true,
+    "target": "es5",
+    "experimentalDecorators": true,
+    "allowJs": true
+  },
+  "files": [
+    "src/douyu/inject.ts",
+    "src/douyu/contentScript.ts"
+  ]
+}
