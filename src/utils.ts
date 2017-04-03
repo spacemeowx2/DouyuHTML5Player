@@ -182,3 +182,14 @@ window.addEventListener('message', event => {
     }
   }
 }, false)
+export async function retry<T> (promise: () => Promise<T>, times: number) {
+  let err = []
+  for (let i = 0; i < times; i++) {
+    try {
+      return await promise()
+    } catch (e) {
+      err.push(e)
+    }
+  }
+  return err
+}

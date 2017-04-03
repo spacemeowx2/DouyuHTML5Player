@@ -1,6 +1,6 @@
 import {JSocket} from '../JSocket'
 import { douyuApi, DouyuAPI } from './api'
-import {onMessage, sendMessage} from '../utils'
+import {onMessage, sendMessage, retry} from '../utils'
 
 declare var window: {
   [key: string]: any
@@ -56,7 +56,7 @@ hookFunc(document, 'createElement', (old, args) => {
 
 let api: DouyuAPI
 onMessage('VIDEOID', async data => {
-  await JSocket.init('https://imspace.applinzi.com/player/JSocket.swf')
+  await retry(() => JSocket.init('https://imspace.applinzi.com/player/JSocket.swf'), 3)
   api = await douyuApi(data.roomId)
   api.hookExe()
   window.api = api
