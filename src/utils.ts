@@ -162,7 +162,7 @@ export const u32 = (s: string) => s.split('').map(i => i.charCodeAt(0)).reduce((
 
 // ---------------------
 
-let messageMap: any
+let messageMap: any = {}
 export function onMessage (type: string, cb: (data: any) => any) {
   messageMap[type] = cb
 }

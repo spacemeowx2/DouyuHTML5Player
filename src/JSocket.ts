@@ -70,7 +70,7 @@ export class JSocket {
   static swfloaded () {
       JSocket.swfloadedcb()
   }
-  static handlers: Handlers[]
+  static handlers: Handlers[] = []
   static connectHandler (socid: number) {
     JSocket.handlers[socid].connectHandler()
   }

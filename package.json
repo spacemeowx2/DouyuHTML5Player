@@ -25,7 +25,8 @@
   "license": "MIT",
   "dependencies": {
     "flv.js": "^1.2.0",
-    "less": "^2.7.1"
+    "less": "^2.7.1",
+    "tslib": "^1.6.0"
   },
   "devDependencies": {
     "@types/chrome": "0.0.44",
@@ -36,6 +37,7 @@
     "rollup-plugin-buble": "^0.14.0",
     "rollup-plugin-commonjs": "^5.0.5",
     "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
     "rollup-watch": "^2.5.0",
     "typescript": "^2.2.2",
     "typestate": "^1.0.4",

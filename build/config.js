@@ -2,17 +2,18 @@ const nodeResolve = require('rollup-plugin-node-resolve')
 const commonjs = require('rollup-plugin-commonjs')
 const buble = require('rollup-plugin-buble')
 const path = require('path')
+const typescript = require('rollup-plugin-typescript')
 
 const sites = ['douyu']
 let builds = {}
 sites.forEach(site => {
   builds[`${site}-cs`] = () => genConfig({
-    entry: path.resolve(__dirname, `../src/${site}/contentScript.js`),
+    entry: path.resolve(__dirname, `../src/${site}/contentScript.ts`),
     dest: path.resolve(__dirname, `../dist/${site}CS.js`),
     format: 'umd'
   })
   builds[`${site}-inject`] = () => genConfig({
-    entry: path.resolve(__dirname, `../src/${site}/inject.js`),
+    entry: path.resolve(__dirname, `../src/${site}/inject.ts`),
     dest: path.resolve(__dirname, `../dist/${site}Inject.js`),
     format: 'umd'
   })
@@ -42,14 +43,20 @@ sites.forEach(site => {
 
 function genConfig(opts) {
   opts.plugins = [
-    nodeResolve(),
+    nodeResolve({
+      extensions: ['.ts', '.js']
+    }),
     commonjs(),
+    typescript({
+      typescript: require('typescript')
+    }),
     buble({
       transforms: {
         dangerousForOf: true
       }
     })
   ]
+  opts.context = 'window'
   return opts
 }
 

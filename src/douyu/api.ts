@@ -147,7 +147,7 @@ class DouyuBaseClient implements DouyuListener {
       return
     }
     if (this.map[type]) {
-      this.map[type](pkg, pkgStr)
+      this.map[type].call(this, pkg, pkgStr)
       return
     }
     this.onDefault(pkg)
@@ -215,7 +215,7 @@ function onChatMsg (data: DouyuPackage) {
 }
 class DouyuClient extends DouyuBaseClient {
   uid: string
-  constructor (roomId: string) {
+  constructor (roomId: string, public danmuClient: DouyuDanmuClient) {
     super(roomId)
     this.redirect = {
       qtlr: 'room_data_tasklis',
@@ -233,7 +233,7 @@ class DouyuClient extends DouyuBaseClient {
     }
   }
   @Type('chatmsg')
-  chagmsg (data: DouyuPackage) {
+  chatmsg (data: DouyuPackage) {
     onChatMsg(data)
   }
   @Type('resog')
@@ -246,7 +246,7 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('loginres')
   loginres (data: DouyuPackage) {
-    console.log('loginres', data)
+    console.log('loginres ms', data)
     this.uid = data.userid
     this.send(this.reqOnlineGift(data))
     this.startKeepalive()
@@ -262,7 +262,8 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('setmsggroup')
   setmsggroup (data: DouyuPackage) {
-    this.send({
+    console.log('joingroup', data)
+    this.danmuClient.send({
       type: 'joingroup',
       rid: data.rid,
       gid: data.gid
@@ -295,12 +296,12 @@ class DouyuDanmuClient extends DouyuBaseClient {
     }
   }
   @Type('chatmsg')
-  chagmsg (pkg: DouyuPackage) {
+  chatmsg (pkg: DouyuPackage) {
     onChatMsg(pkg)
   }
   @Type('loginres')
   loginres (data: DouyuPackage) {
-    console.log('loginres', data)
+    console.log('loginres dm', data)
     this.startKeepalive()
   }
   onDefault (data: DouyuPackage) {
@@ -390,8 +391,8 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
     port: ports[Math.floor(Math.random() * ports.length)]
   }
 
-  let miscClient = new DouyuClient(roomId)
   let danmuClient = new DouyuDanmuClient(roomId)
+  let miscClient = new DouyuClient(roomId, danmuClient)
   miscClient.connect(mserver.ip, mserver.port)
   danmuClient.connect(danmuServer.ip, danmuServer.port)
   return {

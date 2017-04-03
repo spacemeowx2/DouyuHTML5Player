@@ -2,12 +2,12 @@
 //rlcn
 //import './start'
 import '../hookfetch'
-import 'flv.js'
+import flvjs from '../flv.js'
 import { DanmuPlayer, PlayerUI } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
 import { getACF } from './api'
-import {getURL, addScript, addCss, createBlobURL} from '../utils'
+import {getURL, addScript, addCss, createBlobURL, onMessage} from '../utils'
 
 declare var window: {
   __space_inject: {
@@ -52,6 +52,7 @@ class DouyuDanmuPlayer extends DanmuPlayer {
         }, "*")
       }
     })
+    this.source = source
   }
   initUI () {
     this.ui = new DouyuPlayerUI(this, this.state)
@@ -147,7 +148,7 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
 const loadVideo = (roomId: string, replace: (el: Element) => void) => {
   const danmuPlayer = new DouyuDanmuPlayer(roomId)
 
-  danmuPlayer.parsePic = s => s.replace(
+  danmuPlayer.mgr.parsePic = s => s.replace(
     /\[emot:dy(.*?)\]/g,
     (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
   )
@@ -163,29 +164,17 @@ const loadVideo = (roomId: string, replace: (el: Element) => void) => {
 
 
 let danmuPlayer: DouyuDanmuPlayer = null
-window.addEventListener('message', event => {
-  if (event.source != window)
-    return
 
-  if (event.data.type) {
-    const data = event.data.data
-    switch (event.data.type) {
-      case 'DANMU':
-        danmuPlayer && danmuPlayer.onDanmuPkg(data)
-        break
-      case 'VIDEOID':
-        // getRoomId()
-        console.log('onVideoId', data)
-        let ctr = document.querySelector(`#${data.id}`)
-        loadVideo(data.roomId, el => {
-          ctr.parentNode.replaceChild(el, ctr)
-        }).then(dp => {
-          danmuPlayer = dp
-        })
-        break
-    }
-  }
-}, false)
+onMessage('DANMU', data => {
+  danmuPlayer && danmuPlayer.onDanmuPkg(data)
+})
+onMessage('VIDEOID', async data => {
+  console.log('onVideoId', data)
+  let ctr = document.querySelector(`#${data.id}`)
+  danmuPlayer = await loadVideo(data.roomId, el => {
+    ctr.parentNode.replaceChild(el, ctr)
+  })
+})
 
 }
 //document.addEventListener('DOMContentLoaded', onload)
