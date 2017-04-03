@@ -46,7 +46,9 @@ export class JSocket {
   static VERSION = '0.1'
   static el: HTMLDivElement
   static flashapi: any
-  static async init (src: string) {
+  static async init () {
+    // const src = 'https://imspace.applinzi.com/player/JSocket.swf'
+    const src = 'https://imspace.nos-eastchina1.126.net/JSocket.swf'
     const flash = ['<object type="application/x-shockwave-flash" ', 'id="jsocket" ', 'name="jsocket" ', 'align="middle" ', 'allowscriptaccess="always" ', 'allowfullscreen="true" ', 'allowfullscreeninteractive="true" ', 'wmode="transparent" ', 'data="'+src+'" ', 'width="100%" ', 'height="100%">', '<param name="src" value="'+src+'">', '<param name="quality" value="high">', '<param name="bgcolor" value="#fff">', '<param name="allowscriptaccess" value="always">', '<param name="allowfullscreen" value="true">', '<param name="wmode" value="transparent">', '<param name="allowFullScreenInteractive" value="true">', '<param name="flashvars" value="">', "</object>"].join("")
     let div = document.createElement('div')
     div.className = 'jsocket-cls' // 防止Chrome屏蔽小块的 Flash

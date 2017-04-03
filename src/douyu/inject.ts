@@ -56,7 +56,7 @@ hookFunc(document, 'createElement', (old, args) => {
 
 let api: DouyuAPI
 onMessage('VIDEOID', async data => {
-  await retry(() => JSocket.init('https://imspace.applinzi.com/player/JSocket.swf'), 3)
+  await retry(() => JSocket.init(), 3)
   api = await douyuApi(data.roomId)
   api.hookExe()
   window.api = api
