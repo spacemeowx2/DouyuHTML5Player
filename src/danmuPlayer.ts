@@ -27,7 +27,7 @@ export enum SizeState {
   ExitFullScreen
 }
 
-interface PlayerUIEventListener {
+export interface PlayerUIEventListener {
   onReload (): void
   onSendDanmu (content: string): void
   onStop (): void
@@ -198,13 +198,13 @@ export class PlayerUI {
     this.playerCtrl = playerCtrl
     this.transparent = this.transparent
   }
-  private _exitFullPage () {
+  protected _exitFullPage () {
     this.wrap.removeAttribute('fullpage')
     this.el.appendChild(this.wrap)
     document.body.style.overflow = 'auto'
     this.listener.onTryPlay()
   }
-  private _enterFullPage () {
+  protected _enterFullPage () {
     this.wrap.setAttribute('fullpage', '')
     document.body.appendChild(this.wrap)
     document.body.style.overflow = 'hidden'
@@ -392,7 +392,6 @@ export class DanmuPlayer implements PlayerUIEventListener {
   onReload () {
     this.stop()
     this.load()
-    this.mgr.deferTime = 0
   }
   onSendDanmu (txt: string) {
     this.listener.onSendDanmu(txt)
@@ -470,6 +469,8 @@ export class DanmuPlayer implements PlayerUIEventListener {
     let beginTime = 0
     this.state
     .on(PlayerState.Stopped, () => {
+      beginTime = 0
+      this.mgr.deferTime = 0
       if (this.player) {
         this.player.unload()
         this.player.detachMediaElement()

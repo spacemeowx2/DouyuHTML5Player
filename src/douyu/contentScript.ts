@@ -3,11 +3,12 @@
 //import './start'
 import '../hookfetch'
 import flvjs from '../flv.js'
-import { DanmuPlayer, PlayerUI } from '../danmuPlayer'
+import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
 import { getACF } from './api'
-import {getURL, addScript, addCss, createBlobURL, onMessage} from '../utils'
+import { getURL, addScript, addCss, createBlobURL, onMessage, sendMessage } from '../utils'
+import { TypeState } from 'TypeState'
 
 declare var window: {
   __space_inject: {
@@ -34,7 +35,34 @@ flvjs.LoggingControl.forceGlobalTag = true
 flvjs.LoggingControl.enableAll = true
 
 class DouyuPlayerUI extends PlayerUI {
-  
+  private douyuFullpage = false
+  constructor (listener: PlayerUIEventListener, state: TypeState.FiniteStateMachine<PlayerState>) {
+    super(listener, state)
+    this.wrap.style.position = 'inherit'
+    this.wrap.style.zIndex = 'inherit'
+  }
+  protected _enterFullPage () {
+    this.wrap.setAttribute('fullpage', '')
+    this.el.style.border = '0'
+    
+    if (!this.douyuFullpage) {
+      sendMessage('ACJ', {
+        id: 'room_bus_pagescr'
+      })
+      this.douyuFullpage = true
+    }
+  }
+  protected _exitFullPage () {
+    this.wrap.removeAttribute('fullpage')
+    this.el.style.border = ''
+
+    if (this.douyuFullpage) {
+      sendMessage('ACJ', {
+        id: 'room_bus_pagescr'
+      })
+      this.douyuFullpage = false
+    }
+  }
 }
 class DouyuDanmuPlayer extends DanmuPlayer {
   source: DouyuSource

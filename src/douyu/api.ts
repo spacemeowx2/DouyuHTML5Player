@@ -46,7 +46,7 @@ function douyuDecode (data: string) {
 function douyuDecodeList (list: string) {
   return list.split('/').filter(i => i.length > 2).map(filterDec).map(douyuDecode)
 }
-function ACJ (id: string, data: any | string) {
+export function ACJ (id: string, data: any | string) {
   if (typeof data == 'object') {
     data = douyuEncode(data)
   }
@@ -293,6 +293,7 @@ class DouyuDanmuClient extends DouyuBaseClient {
       rss: 'room_data_state',
       srres: 'room_data_wbsharesuc',
       onlinegift: 'room_data_olyw',
+      gpbc: 'room_data_handler'
     }
   }
   @Type('chatmsg')

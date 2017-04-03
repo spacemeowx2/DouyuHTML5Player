@@ -1,5 +1,5 @@
 import {JSocket} from '../JSocket'
-import { douyuApi, DouyuAPI } from './api'
+import { douyuApi, DouyuAPI, ACJ } from './api'
 import {onMessage, sendMessage, retry} from '../utils'
 
 declare var window: {
@@ -63,4 +63,7 @@ onMessage('VIDEOID', async data => {
 })
 onMessage('SENDANMU', data => {
   api.sendDanmu(data)
+})
+onMessage('ACJ', data => {
+  ACJ(data.id, data.data)
 })
