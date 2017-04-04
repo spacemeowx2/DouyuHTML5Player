@@ -191,5 +191,5 @@ export async function retry<T> (promise: () => Promise<T>, times: number) {
       err.push(e)
     }
   }
-  return err
+  throw err
 }
