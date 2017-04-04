@@ -159,6 +159,7 @@ export class PlayerUI {
     document.addEventListener('keydown', event => {
       if (event.keyCode == 13) { // enter
         if (this.sizeState.is(SizeState.Normal)) return
+        if ((event.target as any).nodeName.toUpperCase() === 'TEXTAREA') return
         this.inputing = !this.inputing
         if (this.inputing) {
           msgInput.value = ''
