@@ -63,12 +63,22 @@ interface DouyuListener {
 }
 class DouyuProtocol extends JSocket implements Handlers {
   buffer: string
+  lastHost: string
+  lastPort: number
+  lastConn: boolean = false
   constructor (public listener: DouyuListener) {
     super()
     this.init(this, {})
     this.buffer = ''
   }
+  connect (host: string, port: number) {
+    this.lastHost = host
+    this.lastPort = port
+    this.lastConn = false
+    return super.connect(host, port)
+  }
   connectHandler () {
+    this.lastConn = true
     this.listener.onConnect()
   }
   dataHandler (data: string) {
@@ -98,6 +108,9 @@ class DouyuProtocol extends JSocket implements Handlers {
   }
   closeHandler () {
     console.error('lost connection')
+    if (this.lastConn) {
+      setTimeout(() => this.connect(this.lastHost, this.lastPort), 3000)
+    }
   }
   errorHandler (err: string) {
     console.error(err);

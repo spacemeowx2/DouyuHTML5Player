@@ -16,13 +16,11 @@
   
     "background": {
         "scripts": ["dist/background.js"],
-        "persistent": true
+        "persistent": false
     },
 
     "permissions": [
         "cookies",
-        "webRequest",
-        "webRequestBlocking",
         "tabs",
         "*://*.douyu.com/*",
         "*://*.douyucdn.cn/*",
