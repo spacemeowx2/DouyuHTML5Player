@@ -19,6 +19,7 @@ export enum PlayerState {
   Stopped,
   Playing,
   Paused,
+  Buffering
 }
 export enum SizeState {
   Normal,
@@ -35,6 +36,7 @@ export interface PlayerUIEventListener {
   onVolumeChange (percent: number): void
   onMute (muted: boolean): void
   onHideDanmu (hide: boolean): void
+  onUnload (): void
 }
 class SizeStateFSM extends TypeState.FiniteStateMachine<SizeState> {
   constructor () {
@@ -44,8 +46,21 @@ class SizeStateFSM extends TypeState.FiniteStateMachine<SizeState> {
     this.fromAny(SizeState).to(SizeState.FullScreen)
     this.from(SizeState.FullScreen).to(SizeState.ExitFullScreen)
   }
-  onTransition(from: SizeState, to: SizeState) {
+  onTransition (from: SizeState, to: SizeState) {
     console.log('SizeFSM', from, to)
+  }
+}
+class PlayerStateFSM extends TypeState.FiniteStateMachine<PlayerState> {
+  constructor () {
+    super(PlayerState.Stopped)
+    this.fromAny(PlayerState).to(PlayerState.Stopped)
+    this.fromAny(PlayerState).to(PlayerState.Playing)
+    this.from(PlayerState.Playing).to(PlayerState.Buffering)
+    this.from(PlayerState.Playing).to(PlayerState.Paused)
+    this.from(PlayerState.Buffering).to(PlayerState.Paused)
+  }
+  onTransition (from: PlayerState, to: PlayerState) {
+    console.log('PlayerFSM', from, to)
   }
 }
 export class PlayerUI {
@@ -55,6 +70,7 @@ export class PlayerUI {
   el: HTMLDivElement
   playerCtrl: HTMLDivElement
   tipEl: HTMLDivElement
+  playPause: HTMLDivElement
   inputing = false
   hideDanmu = false
   _muted = false
@@ -190,6 +206,7 @@ export class PlayerUI {
 
     window.addEventListener('unload', event => {
       listener.onStop()
+      listener.onUnload()
     })
 
     this.video = videoEl
@@ -211,29 +228,6 @@ export class PlayerUI {
     document.body.style.overflow = 'hidden'
     this.listener.onTryPlay()
   }
-  // get fullpage () {
-  //   return this._fullpage
-  // }
-  // set fullpage (v) {
-  //   if (v) {
-  //     this._enterFullPage()
-  //   } else {
-  //     this._exitFullPage()
-  //   }
-  //   this.listener.onTryPlay()
-  //   this._fullpage = v
-  // }
-  // get fullscreen () {
-  //   return this._fullscreen
-  // }
-  // set fullscreen (v) {
-  //   this._fullscreen = v
-  //   if (v) {
-  //     requestFullScreen()
-  //   } else {
-  //     exitFullscreen()
-  //   }
-  // }
   get transparent () {
     return parseInt(storage.getItem('transparent', '0'))
   }
@@ -242,7 +236,7 @@ export class PlayerUI {
     this.dmLayout.style.opacity = (1 - val / 100).toString()
   }
   get playing () {
-    return this.state.is(PlayerState.Playing)
+    return this.state.is(PlayerState.Playing) || this.state.is(PlayerState.Buffering)
   }
   set playing (val: boolean) {
     if (val) {
@@ -262,6 +256,13 @@ export class PlayerUI {
       this.muteEl.removeAttribute('muted')
     }
     this._muted = v
+  }
+  notifyStateChange () {
+    if (this.playing) {
+      this.playPause.setAttribute('pause', '')
+    } else {
+      this.playPause.removeAttribute('pause')
+    }
   }
   initControls () {
     if (this.tipEl) return
@@ -289,16 +290,11 @@ export class PlayerUI {
       event.preventDefault()
       event.stopPropagation()
     })
-    const playPause = addBtn('playpause', () => {
+    this.playPause = addBtn('playpause', () => {
       this.playing = !this.playing
-      if (this.playing) {
-        playPause.setAttribute('pause', '')
-      } else {
-        this.state.go(PlayerState.Paused)
-        playPause.removeAttribute('pause')
-      }
+      this.notifyStateChange()
     })
-    playPause.setAttribute('pause', '')
+    this.playPause.setAttribute('pause', '')
     
     const reload = addBtn('reload', () => {
       this.listener.onReload()
@@ -376,16 +372,67 @@ export class PlayerUI {
   }
 }
 
+class PlayerBufferMonitor {
+  private intId: number
+  private bufTime: number
+  constructor (protected dmPlayer: DanmuPlayer) {
+    this.intId = window.setInterval(() => {
+      try {
+        this.handler()
+      } catch (e) {
+        console.error(e)
+      }
+    }, 200)
+    this.bufTime = 0.5
+  }
+  unload () {
+    window.clearInterval(this.intId)
+  }
+  reset () {
+    this.bufTime = 0.5
+  }
+  get player () {
+    return this.dmPlayer.player
+  }
+  handler () {
+    if (this.player) {
+      const buffered = this.player.buffered
+      if (buffered.length === 0) return
+      const buf = buffered.end(buffered.length - 1) - this.player.currentTime
+      const state = this.dmPlayer.state
+      if (state.is(PlayerState.Playing)) {
+        if (buf <= this.bufTime) {
+          state.go(PlayerState.Buffering)
+          this.dmPlayer.ui.notifyStateChange()
+          console.log('AutoPause')
+          this.bufTime *= 2
+          if (this.bufTime > 8) {
+            console.warn('网络不佳')
+            this.bufTime = 8
+          }
+        }
+      } else if (state.is(PlayerState.Buffering)) {
+        if (buf > this.bufTime) {
+          state.go(PlayerState.Playing)
+          this.dmPlayer.ui.notifyStateChange()
+          console.log('AutoResume')
+        }
+      }
+    }
+  }
+}
+
 export class DanmuPlayer implements PlayerUIEventListener {
   inputing: boolean = false
   listener: DanmuPlayerListener
   player: FlvJs.Player
   ui: PlayerUI
-  state: TypeState.FiniteStateMachine<PlayerState>
+  state: PlayerStateFSM
   mgr: DanmuManager
   private _src: string = ''
   private _moveId: number
   private lastVolume: number
+  private bufferMonitor: PlayerBufferMonitor
 
   onVolumeChange (vol: number) {
     this.player.volume = vol
@@ -399,6 +446,9 @@ export class DanmuPlayer implements PlayerUIEventListener {
   }
   onStop () {
     this.stop()
+  }
+  onUnload () {
+    this.bufferMonitor.unload()
   }
   onTryPlay () {
     this.tryPlay()
@@ -460,12 +510,9 @@ export class DanmuPlayer implements PlayerUIEventListener {
     return this._src
   }
   constructor (listener: DanmuPlayerListener, ui?: PlayerUI) {
-    this.state = new TypeState.FiniteStateMachine<PlayerState>(PlayerState.Stopped)
-    // this.sizeState = new TypeState.FiniteStateMachine<SizeState>(SizeState.Normal)
+    this.bufferMonitor = new PlayerBufferMonitor(this)
+    this.state = new PlayerStateFSM()
 
-    // this.state.fromAny(PlayerState).to(PlayerState.Stopped)
-    // this.state.fromAny(PlayerState).to(PlayerState.Playing)
-    this.state.fromAny(PlayerState).toAny(PlayerState)
     const now = () => new Date().getTime()
     let beginTime = 0
     this.state
@@ -480,21 +527,17 @@ export class DanmuPlayer implements PlayerUIEventListener {
     })
     .on(PlayerState.Paused, from => {
       beginTime = now()
-      switch (from) {
-        case PlayerState.Playing:
-          this.player.pause()
-          break
-      }
+      this.player.pause()
     })
     .on(PlayerState.Playing, from => {
       if (beginTime !== 0) {
         this.mgr.deferTime += now() - beginTime
       }
-      switch (from) {
-        case PlayerState.Paused:
-          this.player.play()
-          break
-      }
+      this.player.play()
+    })
+    .on(PlayerState.Buffering, from => {
+      beginTime = now()
+      this.player.pause()
     })
     
     this.initUI()
