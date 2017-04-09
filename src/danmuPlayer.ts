@@ -401,10 +401,9 @@ class PlayerBufferMonitor {
       const buf = buffered.end(buffered.length - 1) - this.player.currentTime
       const state = this.dmPlayer.state
       if (state.is(PlayerState.Playing)) {
-        if (buf <= this.bufTime) {
+        if (buf <= 0.5) {
           state.go(PlayerState.Buffering)
           this.dmPlayer.ui.notifyStateChange()
-          console.log('AutoPause')
           this.bufTime *= 2
           if (this.bufTime > 8) {
             console.warn('网络不佳')
@@ -415,7 +414,6 @@ class PlayerBufferMonitor {
         if (buf > this.bufTime) {
           state.go(PlayerState.Playing)
           this.dmPlayer.ui.notifyStateChange()
-          console.log('AutoResume')
         }
       }
     }
@@ -519,6 +517,7 @@ export class DanmuPlayer implements PlayerUIEventListener {
     .on(PlayerState.Stopped, () => {
       beginTime = 0
       this.mgr.deferTime = 0
+      this.bufferMonitor.reset()
       if (this.player) {
         this.player.unload()
         this.player.detachMediaElement()
