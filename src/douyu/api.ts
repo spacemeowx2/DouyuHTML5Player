@@ -60,26 +60,17 @@ export function ACJ (id: string, data: any | string) {
 interface DouyuListener {
   onPackage (pkg: DouyuPackage, pkgStr: string): void
   onConnect (): void
+  onClose (): void
 }
 class DouyuProtocol extends JSocket implements Handlers {
   buffer: string
-  lastHost: string
-  lastPort: number
-  lastConn: boolean = false
   constructor (public listener: DouyuListener) {
     super()
     this.init(this, {})
     this.buffer = ''
   }
-  connect (host: string, port: number) {
-    this.lastHost = host
-    this.lastPort = port
-    this.lastConn = false
-    return super.connect(host, port)
-  }
   connectHandler () {
-    this.lastConn = true
-    this.listener.onConnect()
+    this.listener && this.listener.onConnect()
   }
   dataHandler (data: string) {
     this.buffer += data
@@ -97,7 +88,7 @@ class DouyuProtocol extends JSocket implements Handlers {
         if (pkgStr.length === 0) continue
         try {
           let pkg = douyuDecode(pkgStr)
-          this.listener.onPackage(pkg, pkgStr)
+          this.listener && this.listener.onPackage(pkg, pkgStr)
         } catch (e) {
           console.error('call map', e)
         }
@@ -108,9 +99,7 @@ class DouyuProtocol extends JSocket implements Handlers {
   }
   closeHandler () {
     console.error('lost connection')
-    if (this.lastConn) {
-      setTimeout(() => this.connect(this.lastHost, this.lastPort), 3000)
-    }
+    this.listener && this.listener.onClose()
   }
   errorHandler (err: string) {
     console.error(err);
@@ -136,6 +125,9 @@ function Type (type: string) {
 
 class DouyuBaseClient implements DouyuListener {
   private prot: DouyuProtocol
+  private lastIP: string = null
+  private lastPort: number = null
+  private lastConn: boolean = false
   redirect: {
     [key: string]: string
   } = {}
@@ -152,6 +144,14 @@ class DouyuBaseClient implements DouyuListener {
   }
   onConnect () {
     this.send(this.loginreq())
+    this.lastConn = true
+  }
+  onClose () {
+    if (this.lastConn) {
+      this.prot.listener = null
+      this.prot = new DouyuProtocol(this)
+      this.connect(this.lastIP, this.lastPort)
+    }
   }
   onPackage (pkg: DouyuPackage, pkgStr: string) {
     const type = pkg.type
@@ -172,6 +172,8 @@ class DouyuBaseClient implements DouyuListener {
     this.prot.send(pkg)
   }
   connect (ip: string, port: number) {
+    this.lastIP = ip
+    this.lastPort = port
     this.prot.connect(ip, port)
   }
   keepalivePkg (): DouyuPackage {

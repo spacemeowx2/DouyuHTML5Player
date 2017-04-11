@@ -535,7 +535,7 @@ export class DanmuPlayer implements PlayerUIEventListener {
       this.player.play()
     })
     .on(PlayerState.Buffering, from => {
-      beginTime = now()
+      beginTime = 0
       this.player.pause()
     })
     
@@ -570,9 +570,10 @@ class DanmuManager {
     endTime: number,
     width: number
   }[] = []
+  private _deferTime = 0 // 暂停时间
   maxRow = 10
   baseTop = 10
-  deferTime = 0 // 暂停时间
+  deferId: number = null
   deferQueue: {
     oriTime: number,
     run: () => void
@@ -581,6 +582,13 @@ class DanmuManager {
   parsePic = (i: string) => i
   get playing () {
     return this.state.is(PlayerState.Playing)
+  }
+  set deferTime (v) {
+    this._deferTime = v
+    this.defering = v !== 0
+  }
+  get deferTime () {
+    return this._deferTime
   }
   constructor (private danmuLayout: HTMLDivElement, private state: TypeState.FiniteStateMachine<PlayerState>) {
     const poolSize = 100
@@ -636,6 +644,7 @@ class DanmuManager {
     }
   }
   doDefer () {
+    if (this.deferQueue.length === 0) return
     const top = this.deferQueue[0]
     const now = new Date().getTime()
     if (this.playing && ((top.oriTime + this.deferTime) <= now)) {
@@ -643,9 +652,17 @@ class DanmuManager {
       top.run()
       this.deferQueue.shift()
     }
-    if (this.deferQueue.length !== 0) {
-      // const next = this.deferQueue[0]
-      setTimeout(() => this.doDefer(), 100)
+  }
+  set defering (v: boolean) {
+    if (this.deferId === null) {
+      if (v) {
+        this.deferId = window.setInterval(() => this.doDefer(), 100)
+      }
+    } else {
+      if (v === false) {
+        window.clearInterval(this.deferId)
+        this.deferId = null
+      }
     }
   }
   fireDanmu (text: string, color: string, cls: (string | string[])) {
@@ -679,7 +696,7 @@ class DanmuManager {
     }
     const now = new Date().getTime()
     if (!this.playing || this.deferTime > 0) {
-      if (this.deferQueue.length === 0) setTimeout(() => this.doDefer(), 100)
+      // if (this.deferQueue.length === 0) setTimeout(() => this.doDefer(), 100)
       this.deferQueue.push({
         oriTime: now,
         run: () => fire()
