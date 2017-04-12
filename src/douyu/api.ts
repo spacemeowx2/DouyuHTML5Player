@@ -360,6 +360,10 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
     js_myblacklist (list: string) {
       console.log('add blacklist', list)
       blacklist = list.split('|')
+    },
+    js_medal_opera (opt: string) {
+      let pkg = douyuDecode(opt)
+      return pkg
     }
   }
   const api: any = window['require']('douyu/page/room/base/api')

@@ -413,6 +413,7 @@ class PlayerBufferMonitor {
       } else if (state.is(PlayerState.Buffering)) {
         if (buf > this.bufTime) {
           state.go(PlayerState.Playing)
+          this.dmPlayer.player.currentTime -= 0.5
           this.dmPlayer.ui.notifyStateChange()
         }
       }
