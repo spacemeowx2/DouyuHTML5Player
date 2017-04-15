@@ -44,7 +44,7 @@
             "matches": [
                 "*://*.douyu.com/*"
             ],
-            "js": ["dist/douyuCS.js"],
+            "js": ["dist/flv.min.js", "dist/douyuCS.js"],
             "run_at": "document_end"
         }
     ]

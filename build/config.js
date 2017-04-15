@@ -18,32 +18,11 @@ sites.forEach(site => {
     format: 'umd'
   })
 })
-// {
-//   'douyu-cs': () => genConfig({
-//     entry: path.resolve(__dirname, '../src/entries/douyuCS.js'),
-//     dest: path.resolve(__dirname, '../dist/douyuCS.js'),
-//     format: 'umd'
-//   }),
-//   'douyu-inject': () => genConfig({
-//     entry: path.resolve(__dirname, '../src/entries/douyuInject.js'),
-//     dest: path.resolve(__dirname, '../dist/douyuInject.js'),
-//     format: 'umd'
-//   }),
-//   'panda-cs': () => genConfig({
-//     entry: path.resolve(__dirname, '../src/entries/pandaCS.js'),
-//     dest: path.resolve(__dirname, '../dist/pandaCS.js'),
-//     format: 'umd'
-//   }),
-//   'panda-inject': () => genConfig({
-//     entry: path.resolve(__dirname, '../src/entries/pandaInject.js'),
-//     dest: path.resolve(__dirname, '../dist/pandaInject.js'),
-//     format: 'umd'
-//   })
-// }
 
 function genConfig(opts) {
   opts.plugins = [
     nodeResolve({
+      skip: ['flv.js'],
       extensions: ['.ts', '.js']
     }),
     commonjs(),
@@ -57,6 +36,9 @@ function genConfig(opts) {
     })
   ]
   opts.context = 'window'
+  opts.globals = {
+    'flv.js': 'flvjs'
+  }
   return opts
 }
 

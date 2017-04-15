@@ -88,6 +88,7 @@ window.XMLHttpRequest = GMXMLHttpRequest`
 // @downloadURL ${hostRoot}/latest.user.js
 // @icon ${hostRoot}/icon.png
 // @name ${manifest.name}
+// @require https://cdn.bootcss.com/flv.js/1.2.0/flv.min.js
 // @namespace http://imspace.cn/gms
 // @run-at ${run_at}
 // @version ${manifest.version}
@@ -100,7 +101,6 @@ ${matches}
   const wrapString = str => {
     str = str.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
     return str.split('\n').map(s => `"${ s.replace(/\r/g, '\\r') }\\n"`).join('+\r\n')
-    // `"${ str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n') }"`
   }
   let script = wrapString(read('./dist/douyuInject.js'))
   let css = wrapString(embedURLToCSS('./dist', read('./dist/danmu.css')))
@@ -108,7 +108,7 @@ ${matches}
     metadata,
     overrideXHR,
     `window.__space_inject = {script: ${script}, css: ${css}};`,
-    read(js[0])
+    read(js[js.length - 1])
     ].join('\r\n')
   fs.writeFileSync(`versions/${manifest.version}.user.js`, jsContent)
 }

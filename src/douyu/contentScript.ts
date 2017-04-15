@@ -2,7 +2,7 @@
 //rlcn
 //import './start'
 import '../hookfetch'
-import flvjs from '../flv.js'
+import 'flv.js'
 import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'

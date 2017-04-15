@@ -34,9 +34,8 @@ function build (builds) {
     }
   })
 
-//, 'start.js'
-  copy.each(['background.js'], '../dist', {
-    cwd: 'src'
+  copy.each(['src/background.js', 'node_modules/flv.js/dist/flv.min.js'], 'dist', {
+    flatten: true
   }, (err, file) => {
     if (err) {
       console.error(err)
