@@ -3,11 +3,11 @@
 //import './start'
 import '../hookfetch'
 import flvjs from '../flv.js'
-import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState } from '../danmuPlayer'
+import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
 import { getACF } from './api'
-import { getURL, addScript, addCss, createBlobURL, onMessage, sendMessage } from '../utils'
+import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage } from '../utils'
 import { TypeState } from 'TypeState'
 
 declare var window: {
@@ -41,15 +41,25 @@ class DouyuPlayerUI extends PlayerUI {
     this.wrap.style.position = 'inherit'
     this.wrap.style.zIndex = 'inherit'
   }
+  protected _enterFullScreen () {
+    this.wrap.style.position = ''
+    this.wrap.style.zIndex = ''
+    super._enterFullScreen()
+  }
+  protected _exitFullScreen () {
+    this.wrap.style.position = 'inherit'
+    this.wrap.style.zIndex = 'inherit'
+    super._exitFullScreen()
+  }
   protected _enterFullPage () {
     this.wrap.setAttribute('fullpage', '')
     this.el.style.border = '0'
     
     if (!this.douyuFullpage) {
-      sendMessage('ACJ', {
+      this.douyuFullpage = true
+      postMessage('ACJ', {
         id: 'room_bus_pagescr'
       })
-      this.douyuFullpage = true
     }
   }
   protected _exitFullPage () {
@@ -57,10 +67,10 @@ class DouyuPlayerUI extends PlayerUI {
     this.el.style.border = ''
 
     if (this.douyuFullpage) {
-      sendMessage('ACJ', {
+      this.douyuFullpage = false
+      postMessage('ACJ', {
         id: 'room_bus_pagescr'
       })
-      this.douyuFullpage = false
     }
   }
 }

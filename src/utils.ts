@@ -166,19 +166,51 @@ let messageMap: any = {}
 export function onMessage (type: string, cb: (data: any) => any) {
   messageMap[type] = cb
 }
-export function sendMessage (type: string, data: any) {
+export function postMessage (type: string, data: any) {
   window.postMessage({
     type: type,
     data: data
   }, "*")
 }
+let msgCallbacks: Function[] = []
+let lastCbId = 0
+export function sendMessage (type: string, data: any) {
+  return new Promise<void>((res, rej) => {
+    let curId = lastCbId++
+    let timeoutId = window.setTimeout(() => {
+      delete msgCallbacks[curId]
+      rej()
+    }, 5000)
+    msgCallbacks[curId] = () => {
+      delete msgCallbacks[curId]
+      window.clearTimeout(timeoutId)
+      res()
+    }
+    window.postMessage({
+      type: type,
+      data: data,
+      cbId: curId++
+    }, '*')
+  })
+}
 window.addEventListener('message', event => {
   if (event.source != window)
     return
   const data = event.data
-  if (data.type) {
+  if (data.cb) {
+    let cb = msgCallbacks[data.cbId]
+    if (cb && (typeof cb === 'function')) {
+      cb()
+    }
+  } else if (data.type) {
     if (typeof messageMap[data.type] === 'function') {
       messageMap[data.type](data.data)
+    }
+    if (data.cbId) {
+      window.postMessage({
+        cb: true,
+        cbId: data.cbId
+      }, '*')
     }
   }
 }, false)

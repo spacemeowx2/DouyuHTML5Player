@@ -1,4 +1,4 @@
-import {p32, u32, sendMessage, utf8_to_ascii, ascii_to_utf8} from '../utils'
+import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8} from '../utils'
 import {JSocket, Handlers} from '../JSocket'
 import md5 from '../md5'
 
@@ -219,7 +219,7 @@ function onChatMsg (data: DouyuPackage) {
     return
   }
   try {
-    sendMessage('DANMU', data)
+    postMessage('DANMU', data)
   } catch (e) {
     console.error('wtf', e)
   }

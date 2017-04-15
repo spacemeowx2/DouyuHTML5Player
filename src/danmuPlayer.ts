@@ -102,7 +102,7 @@ export class PlayerUI {
           this._exitFullPage()
           break
         case SizeState.ExitFullScreen:
-          this._exitFullPage()
+          this._exitFullScreen()
           break
       }
     })
@@ -111,8 +111,9 @@ export class PlayerUI {
         case SizeState.Normal:
           this._enterFullPage()
           break
-        case SizeState.FullScreen:
-          
+        case SizeState.ExitFullScreen:
+          this._enterFullPage()
+          break
       }
     })
     .on(SizeState.FullScreen, from => {
@@ -120,14 +121,15 @@ export class PlayerUI {
       lastState = from
       switch (from) {
         case SizeState.Normal:
-          this._enterFullPage()
+          this._enterFullScreen()
+          break
         case SizeState.FullPage:
-          requestFullScreen()
+          this._enterFullScreen()
           break
       }
     })
     .on(SizeState.ExitFullScreen, from => {
-      exitFullscreen()
+      this._exitFullScreen()
       this.sizeState.go(lastState)
     })
 
@@ -200,7 +202,9 @@ export class PlayerUI {
     document.addEventListener('webkitfullscreenchange', event => {
       this._fullscreen = !this._fullscreen
       if (!this._fullscreen) {
-        this.sizeState.go(SizeState.ExitFullScreen)
+        if (this.sizeState.is(SizeState.FullScreen)) {
+          this.sizeState.go(SizeState.ExitFullScreen)
+        }
       }
     })
 
@@ -216,16 +220,30 @@ export class PlayerUI {
     this.playerCtrl = playerCtrl
     this.transparent = this.transparent
   }
+  protected _exitFullScreen () {
+    exitFullscreen()
+    this.wrap.removeAttribute('fullpage')
+    this.el.appendChild(this.wrap)
+    document.body.style.overflow = document.body.parentElement.style.overflow = 'auto'
+    this.listener.onTryPlay()
+  }
+  protected _enterFullScreen () {
+    requestFullScreen()
+    this.wrap.setAttribute('fullpage', '')
+    document.body.appendChild(this.wrap)
+    document.body.style.overflow = document.body.parentElement.style.overflow = 'hidden'
+    this.listener.onTryPlay()
+  }
   protected _exitFullPage () {
     this.wrap.removeAttribute('fullpage')
     this.el.appendChild(this.wrap)
-    document.body.style.overflow = 'auto'
+    document.body.style.overflow = document.body.parentElement.style.overflow = 'auto'
     this.listener.onTryPlay()
   }
   protected _enterFullPage () {
     this.wrap.setAttribute('fullpage', '')
     document.body.appendChild(this.wrap)
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow = document.body.parentElement.style.overflow = 'hidden'
     this.listener.onTryPlay()
   }
   get transparent () {

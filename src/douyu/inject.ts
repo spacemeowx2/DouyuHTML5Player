@@ -1,11 +1,10 @@
 import {JSocket} from '../JSocket'
 import { douyuApi, DouyuAPI, ACJ } from './api'
-import {onMessage, sendMessage, retry} from '../utils'
+import {onMessage, postMessage, retry} from '../utils'
 
 declare var window: {
   [key: string]: any
 } & Window
-window.postMsg = window.postMessage
 function hookFunc (obj: any, funcName: string, newFunc: (func: Function, args: any[]) => any) {
   var old = obj[funcName]
   obj[funcName] = function () {
@@ -37,13 +36,10 @@ hookFunc(document, 'createElement', (old, args) => {
           setTimeout(() => {
             let roomId = getRoomIdFromFlash(getParam(ret, 'flashvars'))
             console.log('RoomId', roomId)
-            window.postMsg({
-              type: "VIDEOID",
-              data: {
+            postMessage('VIDEOID', {
                 roomId: roomId,
                 id: ret.id
-              }
-            }, "*")
+            })
           }, 1)
         }
       }
