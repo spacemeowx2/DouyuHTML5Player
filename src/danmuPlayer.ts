@@ -401,13 +401,13 @@ class PlayerBufferMonitor {
         console.error(e)
       }
     }, 200)
-    this.bufTime = 0.5
+    this.reset()
   }
   unload () {
     window.clearInterval(this.intId)
   }
   reset () {
-    this.bufTime = 0.5
+    this.bufTime = 1
   }
   get player () {
     return this.dmPlayer.player
@@ -418,8 +418,9 @@ class PlayerBufferMonitor {
       if (buffered.length === 0) return
       const buf = buffered.end(buffered.length - 1) - this.player.currentTime
       const state = this.dmPlayer.state
+      // console.log(buffered.end(buffered.length - 1), this.player.currentTime, buf)
       if (state.is(PlayerState.Playing)) {
-        if (buf <= 0.5) {
+        if (buf <= 1) {
           state.go(PlayerState.Buffering)
           this.dmPlayer.ui.notifyStateChange()
           this.bufTime *= 2

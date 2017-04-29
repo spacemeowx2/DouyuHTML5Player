@@ -65,8 +65,11 @@ export class JSocket {
       return
     } else {
       return new Promise<void>((res, rej) => {
-        JSocket.swfloadedcb = res
-        setTimeout(rej, 10 * 1000)
+        const id = setTimeout(rej, 10 * 1000)
+        JSocket.swfloadedcb = () => {
+          clearTimeout(id)
+          res()
+        }
       })
     }
   }

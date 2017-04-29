@@ -37,10 +37,15 @@ function douyuDecode (data: string) {
   let out: DouyuPackage = {
     type: '!!missing!!'
   }
-  data.split('/').filter(i => i.length > 2).forEach(i => {
-    let e = i.split('@=')
-    out[e[0]] = filterDec(e[1])
-  })
+  try {
+    data.split('/').filter(i => i.length > 2).forEach(i => {
+      let e = i.split('@=')
+      out[e[0]] = filterDec(e[1])
+    })
+  } catch (e) {
+    console.error(e)
+    console.log(data)
+  }
   return out
 }
 function douyuDecodeList (list: string) {
@@ -59,18 +64,35 @@ export function ACJ (id: string, data: any | string) {
 
 interface DouyuListener {
   onPackage (pkg: DouyuPackage, pkgStr: string): void
-  onConnect (): void
   onClose (): void
+  onError (e: string): void
 }
 class DouyuProtocol extends JSocket implements Handlers {
   buffer: string
+  connectHandler: () => void = () => null
   constructor (public listener: DouyuListener) {
     super()
     this.init(this, {})
     this.buffer = ''
   }
-  connectHandler () {
-    this.listener && this.listener.onConnect()
+  connectAsync (host: string, port: number) {
+    super.connect(host, port)
+    return new Promise<void>((res, rej) => {
+      const prevConnHandler = this.connectHandler
+      const prevErrHandler = this.errorHandler
+      const recover = () => {
+        this.connectHandler = prevConnHandler
+        this.errorHandler = prevErrHandler
+      }
+      this.connectHandler = () => {
+        recover()
+        res()
+      }
+      this.errorHandler = () => {
+        recover()
+        rej()
+      }
+    })
   }
   dataHandler (data: string) {
     this.buffer += data
@@ -102,7 +124,8 @@ class DouyuProtocol extends JSocket implements Handlers {
     this.listener && this.listener.onClose()
   }
   errorHandler (err: string) {
-    console.error(err);
+    console.error(err)
+    this.listener && this.listener.onError(err)
   }
   send (data: DouyuPackage) {
     let msg = douyuEncode(data) + '\0'
@@ -127,7 +150,6 @@ class DouyuBaseClient implements DouyuListener {
   private prot: DouyuProtocol
   private lastIP: string = null
   private lastPort: number = null
-  private lastConn: boolean = false
   redirect: {
     [key: string]: string
   } = {}
@@ -142,16 +164,22 @@ class DouyuBaseClient implements DouyuListener {
       return window.$ROOM.args
     }
   }
-  onConnect () {
-    this.send(this.loginreq())
-    this.lastConn = true
+  async reconnect () {
+    console.log('reconnect')
+    this.prot.listener = null
+    this.prot = new DouyuProtocol(this)
+    try {
+      await this.connectAsync(this.lastIP, this.lastPort)
+    } catch (e) {
+      // 连接失败
+      this.onError()
+    }
   }
   onClose () {
-    if (this.lastConn) {
-      this.prot.listener = null
-      this.prot = new DouyuProtocol(this)
-      this.connect(this.lastIP, this.lastPort)
-    }
+    setTimeout(() => this.reconnect(), 1000)
+  }
+  onError () {
+    this.onClose()
   }
   onPackage (pkg: DouyuPackage, pkgStr: string) {
     const type = pkg.type
@@ -171,10 +199,11 @@ class DouyuBaseClient implements DouyuListener {
   send (pkg: DouyuPackage) {
     this.prot.send(pkg)
   }
-  connect (ip: string, port: number) {
+  async connectAsync (ip: string, port: number) {
     this.lastIP = ip
     this.lastPort = port
-    this.prot.connect(ip, port)
+    await this.prot.connectAsync(ip, port)
+    this.send(this.loginreq())
   }
   keepalivePkg (): DouyuPackage {
     return {
@@ -238,7 +267,9 @@ class DouyuClient extends DouyuBaseClient {
       memberinfores: 'room_data_info',
       ranklist: 'room_data_cqrank',
       rsm: 'room_data_brocast',
-      qausrespond: 'data_rank_score'
+      qausrespond: 'data_rank_score',
+      frank: 'room_data_handler',
+      online_noble_list: 'room_data_handler',
     }
   }
   reqOnlineGift (loginres: DouyuPackage) {
@@ -308,7 +339,9 @@ class DouyuDanmuClient extends DouyuBaseClient {
       rss: 'room_data_state',
       srres: 'room_data_wbsharesuc',
       onlinegift: 'room_data_olyw',
-      gpbc: 'room_data_handler'
+      gpbc: 'room_data_handler',
+      synexp: 'room_data_handler',
+      frank: 'room_data_handler',
     }
   }
   @Type('chatmsg')
@@ -330,6 +363,8 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
   let oldExe: Function
   const repeatPacket = (text: string) => douyuDecode(text)
   const jsMap: any = {
+    js_getRankScore: repeatPacket,
+    js_getnoble: repeatPacket,
     js_rewardList: {
       type: 'qrl',
       rid: roomId
@@ -340,7 +375,6 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
     js_newQueryTask: {
       type: 'qtlq'
     },
-    js_getRankScore: repeatPacket,
     js_sendmsg (msg: string) {
       let pkg = douyuDecode(msg)
       pkg.type = 'chatmessage'
@@ -413,8 +447,8 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
 
   let danmuClient = new DouyuDanmuClient(roomId)
   let miscClient = new DouyuClient(roomId, danmuClient)
-  miscClient.connect(mserver.ip, mserver.port)
-  danmuClient.connect(danmuServer.ip, danmuServer.port)
+  await danmuClient.connectAsync(danmuServer.ip, danmuServer.port)
+  await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {
       miscClient.send({
