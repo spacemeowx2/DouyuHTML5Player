@@ -73,3 +73,25 @@ chrome.runtime.onConnect.addListener(port => {
     })
   }
 })
+chrome.pageAction.onClicked.addListener(tab => {
+  chrome.tabs.sendMessage(tab.id, {
+    type: 'toggle'
+  })
+})
+chrome.tabs.onUpdated.addListener((id, x, tab) => {
+	if (/https?:\/\/[^\/]*\.douyu\.com(\/|$)/.test(tab.url)) {
+		chrome.pageAction.show(tab.id)
+	} else {
+		chrome.pageAction.hide(tab.id)
+	}
+})
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.type) {
+    case 'disable':
+      chrome.pageAction.setIcon({
+        tabId: sender.tab.id,
+        path: 'disabled.png'
+      })
+      break
+  }
+})

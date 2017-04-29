@@ -6,7 +6,7 @@
     "description": "基于 flv.js 的斗鱼HTML5播放器.",
     "version": "0.5.5",
 
-    "browser_action": {
+    "page_action": {
         "default_icon": "icon.png"
     },
 
@@ -22,6 +22,7 @@
     "permissions": [
         "cookies",
         "tabs",
+        "storage",
         "*://*.douyu.com/*",
         "*://*.douyucdn.cn/*",
         "*://*/*"

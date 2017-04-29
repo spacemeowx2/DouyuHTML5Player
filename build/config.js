@@ -39,6 +39,7 @@ function genConfig(opts) {
   opts.globals = {
     'flv.js': 'flvjs'
   }
+  opts.indent = '  '
   return opts
 }
 

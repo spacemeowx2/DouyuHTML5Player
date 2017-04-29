@@ -32,7 +32,7 @@ hookFunc(document, 'createElement', (old, args) => {
       // console.log(args)
       if (args[0] == 'data') {
         if (/WebRoom/.test(args[1])) {
-          args[1] = ''
+          // args[1] = ''
           setTimeout(() => {
             let roomId = getRoomIdFromFlash(getParam(ret, 'flashvars'))
             console.log('RoomId', roomId)

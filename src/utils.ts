@@ -225,3 +225,49 @@ export async function retry<T> (promise: () => Promise<T>, times: number) {
   }
   throw err
 }
+export function getSync () {
+  return new Promise<any>((res, rej) => {
+    if (chrome && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get(items => {
+        res(items)
+      })
+    } else {
+      rej(new Error('不支持的存储方式'))
+    }
+  })
+}
+export function setSync (item: any) {
+  return new Promise<void>((res, rej) => {
+    if (chrome && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set(item, res)
+    } else {
+      rej(new Error('不支持的存储方式'))
+    }
+  })
+}
+interface Setting {
+  blacklist: string[]
+}
+export async function getSetting (): Promise<Setting> {
+  const setting = await getSync()
+  if (!setting.blacklist) {
+    setting.blacklist = []
+  }
+  return setting
+}
+export async function setSetting (setting: Setting) {
+  await setSync(setting)
+}
+const defaultBgListener = async (request: any) => null
+let bgListener = defaultBgListener
+if (chrome && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+    sendResponse(await bgListener(request))
+  })
+}
+export function setBgListener (listener: typeof defaultBgListener) {
+  if (listener !== defaultBgListener) {
+    console.warn('多次设置BgListener')
+  }
+  bgListener = listener
+}

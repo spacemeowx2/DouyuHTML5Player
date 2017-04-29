@@ -4,7 +4,7 @@ import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } 
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
 import { getACF } from './api'
-import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage } from '../utils'
+import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener } from '../utils'
 import { TypeState } from 'TypeState'
 
 declare var window: {
@@ -205,8 +205,36 @@ onMessage('DANMU', data => {
 })
 onMessage('VIDEOID', async data => {
   console.log('onVideoId', data)
+  const roomId = data.roomId
+  setBgListener(async req => {
+    switch (req.type) {
+      case 'toggle':
+        let setting = await getSetting()
+        const id = setting.blacklist.indexOf(roomId)
+        if (id === -1) {
+          setting.blacklist.push(roomId)
+        } else {
+          setting.blacklist.splice(id, 1)
+        }
+        await setSetting(setting)
+        location.reload()
+    }
+  })
+  try {
+    const setting = await getSetting()
+    if (setting.blacklist.indexOf(roomId) !== -1) { // 存在黑名单
+      if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          type: 'disable'
+        })
+      }
+      return
+    }
+  } catch (e) {
+    console.warn(e)
+  }
   let ctr = document.querySelector(`#${data.id}`)
-  danmuPlayer = await loadVideo(data.roomId, el => {
+  danmuPlayer = await loadVideo(roomId, el => {
     ctr.parentNode.replaceChild(el, ctr)
   })
 })
