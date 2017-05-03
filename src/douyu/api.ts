@@ -342,7 +342,8 @@ class DouyuDanmuClient extends DouyuBaseClient {
       gpbc: 'room_data_handler',
       synexp: 'room_data_handler',
       frank: 'room_data_handler',
-      ggbb: 'room_data_sabonusget'
+      ggbb: 'room_data_sabonusget',
+      online_noble_list: 'room_data_handler',
     }
   }
   @Type('chatmsg')

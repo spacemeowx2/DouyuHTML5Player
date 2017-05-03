@@ -260,13 +260,14 @@ export async function setSetting (setting: Setting) {
 }
 const defaultBgListener = async (request: any) => null
 let bgListener = defaultBgListener
-if (chrome && chrome.runtime && chrome.runtime.onMessage) {
-  chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    sendResponse(await bgListener(request))
-  })
-}
 export function setBgListener (listener: typeof defaultBgListener) {
-  if (listener !== defaultBgListener) {
+  if (bgListener === defaultBgListener) {
+    if (chrome && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+        sendResponse(await bgListener(request))
+      })
+    }
+  } else {
     console.warn('多次设置BgListener')
   }
   bgListener = listener
