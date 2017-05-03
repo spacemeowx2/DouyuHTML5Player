@@ -150,6 +150,7 @@ class DouyuBaseClient implements DouyuListener {
   private prot: DouyuProtocol
   private lastIP: string = null
   private lastPort: number = null
+  private keepaliveId: number = null
   redirect: {
     [key: string]: string
   } = {}
@@ -234,7 +235,10 @@ class DouyuBaseClient implements DouyuListener {
   }
   startKeepalive () {
     this.send(this.keepalivePkg())
-    setInterval(() => this.send(this.keepalivePkg()), 30 * 1000)
+    if (this.keepaliveId) {
+      clearInterval(this.keepaliveId)
+    }
+    this.keepaliveId = setInterval(() => this.send(this.keepalivePkg()), 30 * 1000)
   }
   constructor (public roomId: string) {
     this.prot = new DouyuProtocol(this)

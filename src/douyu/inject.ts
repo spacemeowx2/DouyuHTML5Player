@@ -51,7 +51,7 @@ hookFunc(document, 'createElement', (old, args) => {
 })
 
 let api: DouyuAPI
-onMessage('VIDEOID', async data => {
+onMessage('BEGINAPI', async data => {
   await retry(() => JSocket.init(), 3)
   api = await douyuApi(data.roomId)
   api.hookExe()

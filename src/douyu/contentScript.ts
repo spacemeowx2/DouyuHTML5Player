@@ -237,6 +237,9 @@ onMessage('VIDEOID', async data => {
   danmuPlayer = await loadVideo(roomId, el => {
     ctr.parentNode.replaceChild(el, ctr)
   })
+  await postMessage('BEGINAPI', {
+    roomId
+  })
 })
 
 }
