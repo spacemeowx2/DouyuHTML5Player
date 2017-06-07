@@ -234,11 +234,11 @@ onMessage('VIDEOID', async data => {
     console.warn(e)
   }
   let ctr = document.querySelector(`#${data.id}`)
-  danmuPlayer = await loadVideo(roomId, el => {
-    ctr.parentNode.replaceChild(el, ctr)
-  })
   await postMessage('BEGINAPI', {
     roomId
+  })
+  danmuPlayer = await loadVideo(roomId, el => {
+    ctr.parentNode.replaceChild(el, ctr)
   })
 })
 
