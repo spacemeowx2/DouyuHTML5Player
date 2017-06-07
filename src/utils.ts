@@ -258,11 +258,11 @@ export async function getSetting (): Promise<Setting> {
 export async function setSetting (setting: Setting) {
   await setSync(setting)
 }
-const defaultBgListener = async (request: any) => null
+const defaultBgListener = async (request: any): Promise<void> => null
 let bgListener = defaultBgListener
 export function setBgListener (listener: typeof defaultBgListener) {
   if (bgListener === defaultBgListener) {
-    if (chrome && chrome.runtime && chrome.runtime.onMessage) {
+    if ((typeof chrome !== 'undefined') && chrome.runtime && chrome.runtime.onMessage) {
       chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         sendResponse(await bgListener(request))
       })

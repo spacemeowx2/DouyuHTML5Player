@@ -64,19 +64,19 @@ class PlayerStateFSM extends TypeState.FiniteStateMachine<PlayerState> {
   }
 }
 export class PlayerUI {
-  dmLayout: HTMLDivElement
-  wrap: HTMLDivElement
+  dmLayout: HTMLElement
+  wrap: HTMLElement
   video: HTMLVideoElement
-  el: HTMLDivElement
-  playerCtrl: HTMLDivElement
-  tipEl: HTMLDivElement
-  playPause: HTMLDivElement
+  el: HTMLElement
+  playerCtrl: HTMLElement
+  tipEl: HTMLElement
+  playPause: HTMLElement
   inputing = false
   hideDanmu = false
   _muted = false
   private _fullscreen = false
   private _lastY: number = -1
-  private muteEl: HTMLDivElement
+  private muteEl: HTMLElement
   private sizeState: SizeStateFSM
 
   constructor (
@@ -287,7 +287,7 @@ export class PlayerUI {
     let bar = this.playerCtrl
     const now = () => new Date().getTime()
     const addBtn = (cls: string, cb: () => void) => {
-      const btn = document.createElement('div')
+      const btn = document.createElement('a')
       btn.className = ['danmu-btn', 'danmu-'+cls].join(' ')
       btn.addEventListener('click', cb)
       bar.appendChild(btn)
@@ -610,7 +610,7 @@ class DanmuManager {
   get deferTime () {
     return this._deferTime
   }
-  constructor (private danmuLayout: HTMLDivElement, private state: TypeState.FiniteStateMachine<PlayerState>) {
+  constructor (private danmuLayout: HTMLElement, private state: TypeState.FiniteStateMachine<PlayerState>) {
     const poolSize = 100
     for (let i = 0; i < poolSize; i++) {
       let dm = document.createElement('div')
