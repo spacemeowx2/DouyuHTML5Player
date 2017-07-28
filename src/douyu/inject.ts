@@ -34,8 +34,11 @@ hookFunc(document, 'createElement', (old, args) => {
         if (/WebRoom/.test(args[1])) {
           // args[1] = ''
           setTimeout(() => {
-            let roomId = getRoomIdFromFlash(getParam(ret, 'flashvars'))
-            console.log('RoomId', roomId)
+            let roomId = getRoomIdFromFlash(getParam(ret, 'flashvars'));
+              let div=document.createElement('div');
+              document.body.appendChild(div);
+              div.innerHTML= `<input type="hidden" selectedColorLevel="1" useTulingRobot="0" useGoogleTranslate="0" bIsShowingInfo="0" targetLanguage="zh-cn" name="dy_roomId" id="dy_roomId" value="${roomId}">`;
+            console.log('RoomId', roomId);
             postMessage('VIDEOID', {
                 roomId: roomId,
                 id: ret.id
@@ -50,16 +53,16 @@ hookFunc(document, 'createElement', (old, args) => {
   return ret
 })
 
-let api: DouyuAPI
+let api: DouyuAPI;
 onMessage('BEGINAPI', async data => {
   await retry(() => JSocket.init(), 3)
   api = await douyuApi(data.roomId)
   api.hookExe()
   window.api = api
-})
+});
 onMessage('SENDANMU', data => {
-  api.sendDanmu(data)
-})
+  api.sendDanmu(data[0],data[1]);
+});
 onMessage('ACJ', data => {
   ACJ(data.id, data.data)
-})
+});

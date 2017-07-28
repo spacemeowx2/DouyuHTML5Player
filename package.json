@@ -1,7 +1,9 @@
 {
+
   "name": "douyu-html5-player",
   "version": "0.5.9",
   "description": "斗鱼HTML5播放器",
+
   "main": "index.js",
   "scripts": {
     "dev:douyuc": "rollup --environment TARGET:douyu-cs -w -c build/config.js",
@@ -24,7 +26,7 @@
   "author": "spacemeowx2",
   "license": "MIT",
   "dependencies": {
-    "flv.js": "^1.3.0",
+    "flv.js": "^1.3.2",
     "less": "^2.7.1",
     "tslib": "^1.6.0"
   },

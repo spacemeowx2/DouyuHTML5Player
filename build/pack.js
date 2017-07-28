@@ -88,7 +88,7 @@ window.XMLHttpRequest = GMXMLHttpRequest`
 // @downloadURL ${hostRoot}/latest.user.js
 // @icon ${hostRoot}/icon.png
 // @name ${manifest.name}
-// @require https://cdn.bootcss.com/flv.js/1.3.0/flv.min.js
+// @require https://cdn.bootcss.com/flv.js/1.3.1/flv.min.js
 // @namespace http://imspace.cn/gms
 // @run-at ${run_at}
 // @version ${manifest.version}
@@ -147,5 +147,5 @@ function zip(manifest, filename) {
   archive.finalize()
 }
 
-zip('manifest.json', 'versions/dh5p-'+package.version+'.zip')
+zip('manifest.json', 'versions/douyuHtml5v'+package.version+'.zip')
 makeUserScript(JSON.parse(manifest))

@@ -32,20 +32,20 @@ function build (builds) {
     if (err) {
       console.error(err)
     }
-  })
+  });
 
-  copy.each(['src/background.js', 'node_modules/flv.js/dist/flv.min.js'], 'dist', {
+  copy.each(['src/background.js','src/responsivevoice.js', 'src/flv.min.js'], 'dist', {
     flatten: true
   }, (err, file) => {
     if (err) {
       console.error(err)
     }
-  })
+  });
 
   read('src/danmu.less')
     .then(lessSrc => less.render(lessSrc))
     .then(css => write('dist/danmu.css', css.css))
-    .catch(logError)
+    .catch(logError);
   next()
 }
 

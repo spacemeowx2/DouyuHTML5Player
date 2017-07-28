@@ -5,6 +5,7 @@ function convertHeader (headers) {
   }
   return out
 }
+
 chrome.runtime.onConnect.addListener(port => {
   if (port.name === 'fetch') {
     console.log('new fetch port', port)
@@ -32,7 +33,7 @@ chrome.runtime.onConnect.addListener(port => {
         })
       } else if (msg.method === 'json') {
         chain = chain.then(() => response.json())
-      } else if (msg.method === 'body.getReader') {
+      }else if (msg.method === 'body.getReader') {
         chain = chain.then(() => {
           reader = response.body.getReader()
           console.log('reader', reader)

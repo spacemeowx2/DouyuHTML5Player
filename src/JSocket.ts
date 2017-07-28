@@ -31,9 +31,13 @@
  *  }
  *  
  * */
+
+import {LocalStorage} from "./utils";
+
 declare var window: {
   [key: string]: any
 } & Window
+
 export class Handlers {
   connectHandler () {}
   dataHandler (data: string) {}
@@ -43,25 +47,26 @@ export class Handlers {
 export class JSocket {
   socid: number
   private static swfloadedcb: Function
+  static defaultJsocketUrl="https://imspace.nos-eastchina1.126.net/JSocket2.swf";
   static VERSION = '0.1'
   static el: HTMLDivElement
   static flashapi: any
   static async init () {
-    // const src = 'https://imspace.applinzi.com/player/JSocket.swf'
-    const src = 'https://imspace.nos-eastchina1.126.net/JSocket2.swf'
-    const flash = ['<object type="application/x-shockwave-flash" ', 'id="jsocket" ', 'name="jsocket" ', 'align="middle" ', 'allowscriptaccess="always" ', 'allowfullscreen="true" ', 'allowfullscreeninteractive="true" ', 'wmode="transparent" ', 'data="'+src+'" ', 'width="100%" ', 'height="100%">', '<param name="src" value="'+src+'">', '<param name="quality" value="high">', '<param name="bgcolor" value="#fff">', '<param name="allowscriptaccess" value="always">', '<param name="allowfullscreen" value="true">', '<param name="wmode" value="transparent">', '<param name="allowFullScreenInteractive" value="true">', '<param name="flashvars" value="">', "</object>"].join("")
-    let div = document.createElement('div')
-    div.className = 'jsocket-cls' // 防止Chrome屏蔽小块的 Flash
-    // div.style.width = '1px'
-    // div.style.height = '1px'
-    document.body.appendChild(div)
-    JSocket.el = div
-    div.innerHTML = flash
+    let oldDiv=document.getElementById("jsocket");
+    if(!oldDiv) {
+      // const src = 'https://imspace.applinzi.com/player/JSocket.swf'
+      const storage = new LocalStorage('h5plr');
+      const src =storage.getItem("JSocket_Url", JSocket.defaultJsocketUrl);
+      const flash = ['<object type="application/x-shockwave-flash" ', 'id="jsocket" ', 'name="jsocket" ', 'align="middle" ', 'allowscriptaccess="always" ', 'allowfullscreen="true" ', 'allowfullscreeninteractive="true" ', 'wmode="transparent" ', 'data="' + src + '" ', 'width="100%" ', 'height="100%">', '<param name="src" value="' + src + '">', '<param name="quality" value="high">', '<param name="bgcolor" value="#fff">', '<param name="allowscriptaccess" value="always">', '<param name="allowfullscreen" value="true">', '<param name="wmode" value="transparent">', '<param name="allowFullScreenInteractive" value="true">', '<param name="flashvars" value="">', "</object>"].join("")
+      let div = document.createElement('div')
+      div.className = 'jsocket-cls' // 防止Chrome屏蔽小块的 Flash
+      document.body.appendChild(div);
+      JSocket.el = div;
+      div.innerHTML = flash;
+    }
     var api = document.querySelector('#jsocket')
-    console.log(div, api)
     JSocket.flashapi = api;
-
-    if ( JSocket.flashapi.newsocket ) {
+    if (JSocket.flashapi.newsocket) {
       return
     } else {
       return new Promise<void>((res, rej) => {
@@ -72,6 +77,23 @@ export class JSocket {
         }
       })
     }
+  }
+  static setJsocketUrl(url:string){
+    if (url!=null||url!='undefined'){
+      const storage= new LocalStorage('h5plr');
+      if (url ==="default"||url ==="默认"){
+        storage.setItem("JSocket_Url", JSocket.defaultJsocketUrl);
+        return true;
+      }
+      url=url.trim();
+      if (url!=""){
+        if (/^https\:\/\/[0-9A-Za-z_!~*'().&=+$%-]+.swf$/.test(url)){
+            storage.setItem("JSocket_Url",url);
+            return true;
+        }
+      }
+    }
+    return false;
   }
   static swfloaded () {
       JSocket.swfloadedcb()
