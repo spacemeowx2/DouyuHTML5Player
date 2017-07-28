@@ -1,7 +1,7 @@
 {
-  "name": "douyu-html5-player",
-  "version": "0.5.8",
-  "description": "斗鱼HTML5播放器",
+  "name": "斗鱼HTML5播放器",
+  "version": "2.3.0",
+  "description": "基于 flv.js 的斗鱼HTML5播放器.为陈一发儿打个广告，关注直播间：67373。",
   "main": "index.js",
   "scripts": {
     "dev:douyuc": "rollup --environment TARGET:douyu-cs -w -c build/config.js",
@@ -14,17 +14,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/spacemeowx2/DouyuHTML5Player"
+    "url": "https://github.com/toprapid/DouyuHTML5Player"
   },
   "keywords": [
     "douyu",
     "html5",
     "player"
   ],
-  "author": "spacemeowx2",
+  "author": "spacemeowx2,Crazygamer,toprapid",
   "license": "MIT",
   "dependencies": {
-    "flv.js": "^1.3.0",
+    "flv.js": "^1.3.2",
     "less": "^2.7.1",
     "tslib": "^1.6.0"
   },

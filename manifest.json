@@ -3,8 +3,8 @@
     "minimum_chrome_version": "49",
 
     "name": "斗鱼HTML5播放器",
-    "description": "基于 flv.js 的斗鱼HTML5播放器.",
-    "version": "0.5.8",
+    "description": "基于 flv.js 的斗鱼HTML5播放器.为陈一发儿打个广告，关注直播间：67373。",
+    "version": "2.3.0",
 
     "page_action": {
         "default_icon": "icon.png"
@@ -45,7 +45,7 @@
             "matches": [
                 "*://*.douyu.com/*"
             ],
-            "js": ["dist/flv.min.js", "dist/douyuCS.js"],
+            "js": ["dist/flv.min.js","dist/responsivevoice.js", "dist/douyuCS.js"],
             "run_at": "document_end"
         }
     ]
