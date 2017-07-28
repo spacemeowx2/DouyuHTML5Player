@@ -147,102 +147,133 @@ function Type (type: string) {
 }
 
 class DouyuBaseClient implements DouyuListener {
-  private prot: DouyuProtocol
-  private lastIP: string = null
-  private lastPort: number = null
-  private keepaliveId: number = null
-  redirect: {
-    [key: string]: string
-  } = {}
-  map: {
-    [key: string]: Function
-  }
-  static getRoomArgs () {
-    if (window._room_args) return window._room_args
-    if (window.room_args) {
-      return window.room_args
-    } else {
-      return window.$ROOM.args
+    private prot: DouyuProtocol;
+    private lastIP: string = null;
+    private lastPort: number = null;
+    private keepaliveId: number = null;
+    redirect: {
+        [key: string]: string
+    } = {}
+    map: {
+        [key: string]: Function
     }
-  }
-  async reconnect () {
-    console.log('reconnect')
-    this.prot.listener = null
-    this.prot = new DouyuProtocol(this)
-    try {
-      await this.connectAsync(this.lastIP, this.lastPort)
-    } catch (e) {
-      // 连接失败
-      this.onError()
-    }
-  }
-  onClose () {
-    setTimeout(() => this.reconnect(), 1000)
-  }
-  onError () {
-    this.onClose()
-  }
-  onPackage (pkg: DouyuPackage, pkgStr: string) {
-    const type = pkg.type
-    if (this.redirect[type]) {
-      ACJ(this.redirect[type], pkg)
-      return
-    }
-    if (this.map[type]) {
-      this.map[type].call(this, pkg, pkgStr)
-      return
-    }
-    this.onDefault(pkg)
-  }
-  onDefault (pkg: DouyuPackage) {
 
-  }
-  send (pkg: DouyuPackage) {
-    this.prot.send(pkg)
-  }
-  async connectAsync (ip: string, port: number) {
-    this.lastIP = ip
-    this.lastPort = port
-    await this.prot.connectAsync(ip, port)
-    this.send(this.loginreq())
-  }
-  keepalivePkg (): DouyuPackage {
-    return {
-      type: 'keeplive',
-      tick: Math.round(new Date().getTime() / 1000).toString()
+    static getRoomArgs() {
+        if (window._room_args) return window._room_args
+        if (window.room_args) {
+            return window.room_args
+        } else {
+            return window.$ROOM.args
+        }
     }
-  }
-  loginreq () {
-    const rt = Math.round(new Date().getTime() / 1000)
-    const devid = getACF('devid') // md5(Math.random()).toUpperCase()
-    const username = getACF('username')
-    console.log('username', username, devid)
-    return {
-      type: 'loginreq',
-      username: username,
-      ct: 0,
-      password: '',
-      roomid: this.roomId,
-      devid: devid,
-      rt: rt,
-      vk: md5(`${rt}r5*^5;}2#\${XF[h+;'./.Q'1;,-]f'p[${devid}`),
-      ver: '20150929',
-      aver: '2017012111',
-      biz: getACF('biz'),
-      stk: getACF('stk'),
-      ltkid: getACF('ltkid')
+
+    async reconnect() {
+        console.log('reconnect');
+        this.prot.listener = null;
+        this.prot = new DouyuProtocol(this);
+        try {
+            await this.connectAsync(this.lastIP, this.lastPort)
+        } catch (e) {
+            // 连接失败
+            this.onError()
+        }
     }
-  }
-  startKeepalive () {
-    this.send(this.keepalivePkg())
-    if (this.keepaliveId) {
-      clearInterval(this.keepaliveId)
+
+    onClose() {
+        setTimeout(() => this.reconnect(), 1000)
     }
-    this.keepaliveId = setInterval(() => this.send(this.keepalivePkg()), 30 * 1000)
-  }
-  constructor (public roomId: string) {
-    this.prot = new DouyuProtocol(this)
-  }
+
+    onError() {
+        this.onClose()
+    }
+
+    onPackage(pkg: DouyuPackage, pkgStr: string) {
+        const type = pkg.type
+        if (this.redirect[type]) {
+            ACJ(this.redirect[type], pkg)
+            return
+        }
+        if (this.map[type]) {
+            this.map[type].call(this, pkg, pkgStr)
+            return
+        }
+        if (type === "!!missing!!") {
+            this.prot.send(this.logout());
+            this.reconnect();
+        }
+        else this.onDefault(pkg);
+    }
+
+    onDefault(pkg: DouyuPackage) {
+
+    }
+
+    send(pkg: DouyuPackage) {
+        this.prot.send(pkg)
+    }
+
+    async connectAsync(ip: string, port: number) {
+        this.lastIP = ip;
+        this.lastPort = port;
+        await this.prot.connectAsync(ip, port);
+        this.send(this.loginreq());
+        this.send(this.joinGroup());
+    }
+
+    keepalivePkg(): DouyuPackage {
+        return {
+            type: 'keeplive',
+            tick: Math.round(new Date().getTime() / 1000).toString()
+        }
+    }
+
+    logout(): DouyuPackage {
+        return {
+            type: "logout"
+        }
+    }
+
+    loginreq(): DouyuPackage {
+        const rt = Math.round(new Date().getTime() / 1000)
+        const devid = getACF('devid') // md5(Math.random()).toUpperCase()
+        const username = getACF('username')
+        //console.log('username', username, devid)
+        return {
+            type: 'loginreq',
+            username: username,
+            ct: 0,
+            password: '',
+            roomid: this.roomId,
+            devid: devid,
+            rt: rt,
+            vk: md5(`${rt}r5*^5;}2#\${XF[h+;'./.Q'1;,-]f'p[${devid}`),
+            ver: '20150929',
+            aver: '2017012111',
+            biz: getACF('biz'),
+            stk: getACF('stk'),
+            ltkid: getACF('ltkid')
+        }
+    }
+
+    joinGroup():DouyuPackage{
+        return{
+            type:"joingroup",
+            rid: this.roomId,
+            gid:-9999
+        };
+    }
+
+    startKeepalive() {
+        this.send(this.keepalivePkg())
+        if (this.keepaliveId) {
+            clearInterval(this.keepaliveId)
+        }
+        this.keepaliveId = setInterval(() => this.send(this.keepalivePkg()), 15 * 1000)
+    }
+
+    constructor(public roomId: string) {
+        this.prot = new DouyuProtocol(this)
+    }
 }
 
 let blacklist: string[] = []
@@ -296,14 +327,14 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('loginres')
   loginres (data: DouyuPackage) {
-    console.log('loginres ms', data)
-    this.uid = data.userid
-    this.send(this.reqOnlineGift(data))
-    this.startKeepalive()
-    ACJ('room_data_login', data)
+    console.log('loginres ms', data);
+    this.uid = data.userid;
+    this.send(this.reqOnlineGift(data));
+    this.startKeepalive();
+    ACJ('room_data_login', data);
     ACJ('room_data_getdid', {
       devid: getACF('devid')
-    })
+    });
   }
   @Type('keeplive')
   keeplive (data: DouyuPackage, rawString: string) {
@@ -321,7 +352,7 @@ class DouyuClient extends DouyuBaseClient {
   }
   onDefault (data: DouyuPackage) {
     ACJ('room_data_handler', data)
-    console.log('ms', data)
+    //console.log('ms', data)
   }
 }
 
@@ -357,11 +388,11 @@ class DouyuDanmuClient extends DouyuBaseClient {
   @Type('loginres')
   loginres (data: DouyuPackage) {
     console.log('loginres dm', data)
-    this.startKeepalive()
+    this.startKeepalive();
   }
   onDefault (data: DouyuPackage) {
     ACJ('room_data_handler', data)
-    console.log('dm', data)
+    //console.log('dm', data)
   }
 }
 
@@ -436,7 +467,7 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
 }
 
 export interface DouyuAPI {
-  sendDanmu (content: string): void
+  sendDanmu (content: string,colorLevel:string): void
   serverSend (pkg: DouyuPackage): void
   hookExe (): void
 }
@@ -456,14 +487,17 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
   await danmuClient.connectAsync(danmuServer.ip, danmuServer.port)
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
-    sendDanmu (content: string) {
+    sendDanmu (content: string,colorLevel:string) {
       miscClient.send({
-        col: '0',
-        content: content,
-        dy: '',
-        pid: '',
-        sender: miscClient.uid,
-        type: 'chatmessage'
+          col:colorLevel,
+          content: content,
+          dy: getACF('devid'),
+          ifs:colorLevel==="0" ? "0":"1",
+          pid: "",
+          nc:"0",
+          rev: "0",
+          sender: miscClient.uid,
+          type: "chatmessage"
       })
     },
     serverSend (pkg: DouyuPackage) {
