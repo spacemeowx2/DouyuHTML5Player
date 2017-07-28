@@ -1,3 +1,5 @@
+import interruptTransfer = chrome.usb.interruptTransfer;
+
 function utf8ToUtf16 (utf8_bytes: number[]) {
   let unicode_codes: number[] = [];
   let unicode_code = 0;
@@ -145,6 +147,12 @@ export function addScript (src: string) {
   script.src = getURL(src)
   document.head.appendChild(script)
 }
+
+export function addCORsScript(src:string) {
+    let script = document.createElement('script');
+    script.src = src;
+    document.head.appendChild(script);
+}
 export function addCss (src: string, rel: string = 'stylesheet', type: string = 'text/css') {
   var link = document.createElement('link')
   link.rel = rel
@@ -271,4 +279,42 @@ export function setBgListener (listener: typeof defaultBgListener) {
     console.warn('多次设置BgListener')
   }
   bgListener = listener
+}
+export async function stableFetcher(url:string, inits:any,timeoutSeconds:number,callbackFunc:Function){
+    if (inits) {
+        try {
+            let XMLHttp = new XMLHttpRequest();
+            XMLHttp.withCredentials = false;
+            let timeout = setTimeout(function () {
+                XMLHttp.abort();
+            }, timeoutSeconds*1000);
+            XMLHttp.onreadystatechange = function () {
+                if (XMLHttp.readyState === 4)  //4表示准备完成
+                {
+                    clearTimeout(timeout);
+                    if (XMLHttp.status === 200)  //200表示回调成功
+                    {
+                        callbackFunc(XMLHttp.responseText);
+                    }
+                    else {
+                        console.log("stableFetcher request was failure, request url is "+url+" . return status is " + XMLHttp.status);
+                    }
+                }
+            };
+            XMLHttp.open(inits.method, url, true);
+            if (inits.hasOwnProperty("headers")){
+              let z=Object.keys(inits.headers);
+              for (let i=0;i<z.length;i++){
+                  XMLHttp.setRequestHeader(z[i], inits.headers[z[i]]);
+              }
+            }
+            inits.hasOwnProperty("data") ? XMLHttp.send(inits.data):XMLHttp.send();
+        }
+        catch(e) {
+            console.log(e);
+        }
+    }
+}
+export async function fetchText(url:any) {
+    return fetch(url).then(request => request.text()).then(text => {return text;}).catch(error => {console.log(`ERROR: ${error.stack}`);});
 }
