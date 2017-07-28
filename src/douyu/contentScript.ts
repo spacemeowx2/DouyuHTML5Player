@@ -264,6 +264,12 @@ onMessage('VIDEOID', async data => {
         location.reload()
     }
   })
+
+  if (1) {
+    console.warn('因斗鱼又更新了API算法所以该扩展暂时失效, 我最近也比较忙可能得过两周才能搞好=.=')
+    return
+  }
+
   try {
     const setting = await getSetting()
     if (setting.blacklist.indexOf(roomId) !== -1) { // 存在黑名单
