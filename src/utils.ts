@@ -172,19 +172,20 @@ export function postMessage (type: string, data: any) {
     data: data
   }, "*")
 }
-let msgCallbacks: Function[] = []
+type msgCallBack = (result: any) => void
+let msgCallbacks: msgCallBack[] = []
 let lastCbId = 0
-export function sendMessage (type: string, data: any) {
-  return new Promise<void>((res, rej) => {
-    let curId = lastCbId++
+export function sendMessage<T> (type: string, data: any) {
+  return new Promise<any>((res, rej) => {
+    let curId = ++lastCbId
     let timeoutId = window.setTimeout(() => {
       delete msgCallbacks[curId]
-      rej()
+      rej(new Error('sendMessage timeout'))
     }, 5000)
-    msgCallbacks[curId] = () => {
+    msgCallbacks[curId] = (result) => {
       delete msgCallbacks[curId]
       window.clearTimeout(timeoutId)
-      res()
+      res(result)
     }
     window.postMessage({
       type: type,
@@ -193,24 +194,29 @@ export function sendMessage (type: string, data: any) {
     }, '*')
   })
 }
-window.addEventListener('message', event => {
+window.addEventListener('message', async event => {
   if (event.source != window)
     return
   const data = event.data
   if (data.cb) {
     let cb = msgCallbacks[data.cbId]
     if (cb && (typeof cb === 'function')) {
-      cb()
+      cb(data.cbResult)
     }
   } else if (data.type) {
+    let result: any = undefined
     if (typeof messageMap[data.type] === 'function') {
-      messageMap[data.type](data.data)
-    }
-    if (data.cbId) {
-      window.postMessage({
-        cb: true,
-        cbId: data.cbId
-      }, '*')
+      result = messageMap[data.type](data.data)
+      if (result instanceof Promise) {
+        result = await result
+      }
+      if (data.cbId) {
+        window.postMessage({
+          cb: true,
+          cbId: data.cbId,
+          cbResult: result
+        }, '*')
+      }
     }
   }
 }, false)
@@ -271,4 +277,40 @@ export function setBgListener (listener: typeof defaultBgListener) {
     console.warn('多次设置BgListener')
   }
   bgListener = listener
+}
+export class DelayNotify<T> {
+  notified = false
+  value: T
+  tmid: number = null
+  res: (value: T) => void = null
+  constructor (private defaultValue: T) {
+  }
+  notify (value: T) {
+    if (this.notified) {
+      return
+    }
+    this.notified = true
+    this.value = value
+    if (this.res) {
+      this.res(this.value)
+    }
+  }
+  wait (timeout = 1000 * 10) {
+    if (this.notified) {
+      return Promise.resolve(this.value)
+    }
+    return new Promise<T>((resolve, reject) => {
+      if (timeout > 0) {
+        window.setTimeout(() => {
+          resolve(this.defaultValue)
+        }, timeout)
+      }
+      this.res = (value: T) => {
+        return resolve(value)
+      }
+    })
+  }
+  reset () {
+    this.notified = false
+  }
 }
