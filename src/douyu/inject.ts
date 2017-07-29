@@ -1,6 +1,7 @@
 import {JSocket} from '../JSocket'
 import { douyuApi, DouyuAPI, ACJ } from './api'
 import {onMessage, postMessage, retry} from '../utils'
+import {Signer, SignerState} from './signer'
 
 declare var window: {
   [key: string]: any
@@ -24,7 +25,6 @@ function getParam(flash: any, name: string) {
 function getRoomIdFromFlash(s: string) {
   return s.split('&').filter(i => i.substr(0,6) == 'RoomId')[0].split('=')[1]
 }
-// var wwwtttfff=0
 hookFunc(document, 'createElement', (old, args) => {
   var ret = old.apply(null, args)
   if (args[0] == 'object') {
@@ -49,6 +49,14 @@ hookFunc(document, 'createElement', (old, args) => {
   }
   return ret
 })
+Signer.onStateChanged = (state: SignerState) => {
+  if (state === SignerState.Ready) {
+    postMessage('SIGNER_READY', true)
+  } else if (state === SignerState.Timeout) {
+    postMessage('SIGNER_READY', false)
+  }
+}
+Signer.init()
 
 let api: DouyuAPI
 onMessage('BEGINAPI', async data => {
@@ -62,4 +70,10 @@ onMessage('SENDANMU', data => {
 })
 onMessage('ACJ', data => {
   ACJ(data.id, data.data)
+})
+onMessage('SIGNAPI', data => {
+  if (Signer.state !== SignerState.Ready) {
+    throw new Error('Signer is not ready')
+  }
+  return Signer.sign(data.rid, data.tt, data.did)
 })

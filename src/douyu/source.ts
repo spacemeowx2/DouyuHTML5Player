@@ -1,20 +1,27 @@
 import md5 from '../md5'
 import {BaseSource} from '../source'
-import {stupidMD5} from './blackbox'
+
+type SignFunc = (rid: string, tt: number, did: string) => Promise<string>;
+let m_signer: SignFunc = null
 
 async function getSourceURL (rid: string, cdn: string, rate: string) {
   const API_KEY = 'a2053899224e8a92974c729dceed1cc99b3d8282'
   const tt = Math.round(new Date().getTime() / 60 / 1000)
   const did = md5(Math.random().toString()).toUpperCase()
-  const signContent = [rid, did, API_KEY, tt].join('')
-  const sign = stupidMD5(signContent)
+  // const signContent = [rid, did, API_KEY, tt].join('')
+  // const sign = stupidMD5(signContent)
+  if (m_signer === null) {
+    throw new Error('Signer is not defined.')
+  }
+  const sign = await m_signer(rid, tt, did)
   let body: any = {
     'cdn': cdn,
     'rate': rate,
-    'ver': '2017022801',
+    'ver': '2017072601',
     'tt': tt,
     'did': did,
-    'sign': sign
+    'sign': sign,
+    'cptl': '0001'
   }
   body = Object.keys(body).map(key => `${key}=${encodeURIComponent(body[key])}`).join('&')
   const res = await fetch(`https://www.douyu.com/lapi/live/getPlay/${rid}`, {
@@ -51,8 +58,9 @@ export class DouyuSource extends BaseSource {
   swfApi: any
   private _cdn: string
   private _rate: string
-  constructor (roomId: string) {
+  constructor (roomId: string, signer: SignFunc) {
     super()
+    m_signer = signer
     this._cdn = 'ws'
     this._rate = '0'
     this.url = ''

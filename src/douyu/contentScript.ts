@@ -4,7 +4,7 @@ import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } 
 import { bindMenu } from '../playerMenu'
 import { DouyuSource } from './source'
 import { getACF } from './api'
-import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener } from '../utils'
+import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
 
 declare var window: {
@@ -74,7 +74,10 @@ class DouyuPlayerUI extends PlayerUI {
 class DouyuDanmuPlayer extends DanmuPlayer {
   source: DouyuSource
   constructor (roomId: string) {
-    const source = new DouyuSource(roomId)
+    const source = new DouyuSource(roomId, async (rid, tt, did) => {
+      let sign = await sendMessage<string>('SIGNAPI', {rid, tt, did})
+      return sign
+    })
     source.onChange = videoUrl => {
       this.src = videoUrl
     }
@@ -199,7 +202,12 @@ const loadVideo = (roomId: string, replace: (el: Element) => void) => {
 
 
 let danmuPlayer: DouyuDanmuPlayer = null
+let signerLoaded = new DelayNotify(false)
 
+onMessage('SIGNER_READY', (data: boolean) => {
+  console.log('SIGNER_READY', data)
+  signerLoaded.notify(data)
+})
 onMessage('DANMU', data => {
   danmuPlayer && danmuPlayer.onDanmuPkg(data)
 })
@@ -219,10 +227,11 @@ onMessage('VIDEOID', async data => {
         await setSetting(setting)
         location.reload()
     }
-  })
+  });
 
-  if (1) {
-    console.warn('因斗鱼又更新了API算法所以该扩展暂时失效, 我最近也比较忙可能得过两周才能搞好=.=')
+
+  if (!await signerLoaded.wait()) {
+    console.warn('需要开启 Flash 才能获取直播地址')
     return
   }
 
