@@ -1,9 +1,6 @@
 # 斗鱼HTML5播放器
 
-**2017/7/17 更新**
-
-因斗鱼又更新了API接口, 本程序使用的接口已暂时失效, 需要重新分析斗鱼的播放器程序(分析出新的API拿到直播地址)才能继续使用. 故暂时推一个版本禁用扩展程序, 预计两周后更新新版本.(实在逆不出来也没有办法, 最近个人原因比较没有时间)
-
+0.6.0 暂时使用 swf 进行签名所以需要开启 Flash 插件才能使用. 将来可能可以不需要 Flash 进行签名, 直接使用 js 运行 swf 文件.
 
 基于 [flv.js](https://github.com/Bilibili/flv.js) 的斗鱼HTML5播放器.
 
@@ -40,3 +37,16 @@
 2. `npm run build`
 
 3. `npm run pack` 在 versions 文件夹查看 zip 文件
+
+# 捐赠
+
+欢迎投食(逃
+
+支付宝
+
+![alipay](https://user-images.githubusercontent.com/8019167/28763218-faff38b6-75ee-11e7-80a0-0ecb031256e2.png)
+
+
+微信
+
+![wechat](https://user-images.githubusercontent.com/8019167/28763153-7e168bc4-75ee-11e7-8aa6-322a33a4c2de.png)
