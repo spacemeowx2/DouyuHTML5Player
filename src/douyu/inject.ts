@@ -1,7 +1,6 @@
 import {JSocket} from '../JSocket'
 import { douyuApi, DouyuAPI, ACJ } from './api'
 import {onMessage, postMessage, retry} from '../utils'
-import {Signer, SignerState} from './signer'
 
 declare var window: {
   [key: string]: any
@@ -49,14 +48,6 @@ hookFunc(document, 'createElement', (old, args) => {
   }
   return ret
 })
-Signer.onStateChanged = (state: SignerState) => {
-  if (state === SignerState.Ready) {
-    postMessage('SIGNER_READY', true)
-  } else if (state === SignerState.Timeout) {
-    postMessage('SIGNER_READY', false)
-  }
-}
-Signer.init()
 
 let api: DouyuAPI
 onMessage('BEGINAPI', async data => {
@@ -71,9 +62,9 @@ onMessage('SENDANMU', data => {
 onMessage('ACJ', data => {
   ACJ(data.id, data.data)
 })
-onMessage('SIGNAPI', data => {
-  if (Signer.state !== SignerState.Ready) {
-    throw new Error('Signer is not ready')
-  }
-  return Signer.sign(data.rid, data.tt, data.did)
-})
+// onMessage('SIGNAPI', async data => {
+//   if (Signer.state !== SignerState.Ready) {
+//     throw new Error('Signer is not ready')
+//   }
+//   return Signer.sign(data.rid, data.tt, data.did)
+// })

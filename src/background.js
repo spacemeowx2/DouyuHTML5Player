@@ -108,9 +108,10 @@ emu.runSWF('dist/douyu.swf', false).then(() => {
     let out = CModule.callProperty('readString', pOut, 4)
     CModule.callProperty('free', StreamSignDataPtr)
     CModule.callProperty('free', outptr1)
+    console.log('sign result', sign)
     return {
       sign,
-      out
+      cptl: out
     }
   }
 })
@@ -122,15 +123,15 @@ class Signer {
 
   }
   onMessage (msg) {
-    let ret = null
+    let args = []
     if (msg.method === 'query') {
-      ret = !!douyuSign
+      args.push(!!douyuSign)
     } else if (msg.method === 'sign') {
-      ret = douyuSign(msg.roomId, msg.time, msg.did)
+      args.push(douyuSign(...msg.args))
     }
     this.port.postMessage({
       method: msg.method,
-      ret: ret
+      args: args
     })
   }
 }

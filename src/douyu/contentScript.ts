@@ -2,10 +2,11 @@ import '../hookfetch'
 import 'flv.js'
 import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
-import { DouyuSource } from './source'
+import { DouyuSource, ISignerResult } from './source'
 import { getACF } from './api'
 import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
+import { Signer, SignerState } from './signer'
 
 declare var window: {
   __space_inject: {
@@ -75,7 +76,7 @@ class DouyuDanmuPlayer extends DanmuPlayer {
   source: DouyuSource
   constructor (roomId: string) {
     const source = new DouyuSource(roomId, async (rid, tt, did) => {
-      let sign = await sendMessage<string>('SIGNAPI', {rid, tt, did})
+      let sign = await Signer.sign(roomId, tt, did)
       return sign
     })
     source.onChange = videoUrl => {
@@ -212,10 +213,19 @@ const loadVideo = (roomId: string, replace: (el: Element) => void) => {
 let danmuPlayer: DouyuDanmuPlayer = null
 let signerLoaded = new DelayNotify(false)
 
-onMessage('SIGNER_READY', (data: boolean) => {
+Signer.onStateChanged = (state: SignerState) => {
+  let data = false
+  if (state === SignerState.Ready) {
+    data = true
+  } else if (state === SignerState.Timeout) {
+    data = false
+  } else {
+    return
+  }
   console.log('SIGNER_READY', data)
   signerLoaded.notify(data)
-})
+}
+Signer.init()
 onMessage('DANMU', data => {
   danmuPlayer && danmuPlayer.onDanmuPkg(data)
 })

@@ -1,27 +1,29 @@
 import md5 from '../md5'
 import {BaseSource} from '../source'
 
-type SignFunc = (rid: string, tt: number, did: string) => Promise<string>;
+export interface ISignerResult {
+  cptl: string,
+  sign: string
+}
+type SignFunc = (rid: string, tt: number, did: string) => Promise<ISignerResult>
 let m_signer: SignFunc = null
 
 async function getSourceURL (rid: string, cdn: string, rate: string) {
-  const API_KEY = 'a2053899224e8a92974c729dceed1cc99b3d8282'
   const tt = Math.round(new Date().getTime() / 60 / 1000)
   const did = md5(Math.random().toString()).toUpperCase()
-  // const signContent = [rid, did, API_KEY, tt].join('')
-  // const sign = stupidMD5(signContent)
   if (m_signer === null) {
     throw new Error('Signer is not defined.')
   }
-  const sign = await m_signer(rid, tt, did)
+  const sign: ISignerResult = await m_signer(rid, tt, did)
   let body: any = {
     'cdn': cdn,
     'rate': rate,
-    'ver': '2017072601',
+    'ver': 'Douyu_h5_2017080201beta',
     'tt': tt,
     'did': did,
-    'sign': sign,
-    'cptl': '0001'
+    'sign': sign.sign,
+    'cptl': sign.cptl,
+    'ct': 'webh5'
   }
   body = Object.keys(body).map(key => `${key}=${encodeURIComponent(body[key])}`).join('&')
   const res = await fetch(`https://www.douyu.com/lapi/live/getPlay/${rid}`, {

@@ -176,7 +176,7 @@ type msgCallBack = (result: any) => void
 let msgCallbacks: msgCallBack[] = []
 let lastCbId = 0
 export function sendMessage<T> (type: string, data: any) {
-  return new Promise<any>((res, rej) => {
+  return new Promise<T>((res, rej) => {
     let curId = ++lastCbId
     let timeoutId = window.setTimeout(() => {
       delete msgCallbacks[curId]
