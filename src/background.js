@@ -164,7 +164,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'disable':
       chrome.pageAction.setIcon({
         tabId: sender.tab.id,
-        path: 'disabled.png'
+        path: 'dist/img/disabled.png'
       })
       break
   }
