@@ -7,6 +7,7 @@ import { getACF } from './api'
 import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
 import { Signer, SignerState } from './signer'
+import { getDialog } from '../donate'
 
 declare var window: {
   __space_inject: {
@@ -180,16 +181,24 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
       }
     }))
   }
+  const dialog = getDialog('捐赠', '你的支持是我最大的动力.', [{
+    src: getURL('dist/img/alipay.png'),
+    desc: '支付宝'
+  }, {
+    src: getURL('dist/img/wechat.png'),
+    desc: '微信'
+  }])
   const donate = () => {
     return [{
       text: '捐赠',
       cb () {
-        
+        document.body.appendChild(dialog)
+        dialog.style.display = 'flex'
       }
     }]
   }
   const dash = {}
-  bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu()))
+  bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu(), dash, donate()))
 }
 
 const loadVideo = (roomId: string, replace: (el: Element) => void) => {

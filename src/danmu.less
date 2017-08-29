@@ -9,6 +9,49 @@
   left: 0;
 }
 
+.donate-dialog {
+  position: fixed;
+  z-index: 100002;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .donate-title {
+    font-size: 20px;
+  }
+  .donate-content {
+    margin-bottom: 10px;
+  }
+  .donate-wrap {
+    width: 400px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+  }
+  .donate-qrcode-bar {
+    display: flex;
+    justify-content: space-between;
+    img {
+      height: 168px;
+    }
+  }
+  .donate-qrcode-desc {
+    text-align: center;
+  }
+  .donate-close-btn {
+    margin-top: 10px;
+    &:before {
+      content: '关闭';
+      text-align: center;
+      display: block;
+    }
+  }
+}
+
 .player-menu {
   position: fixed;
   top: 0;
