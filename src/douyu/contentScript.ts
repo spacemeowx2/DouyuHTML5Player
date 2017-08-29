@@ -179,6 +179,14 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
       }
     }))
   }
+  const donate = () => {
+    return [{
+      text: '捐赠',
+      cb () {
+        
+      }
+    }]
+  }
   const dash = {}
   bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu()))
 }

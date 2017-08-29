@@ -78,6 +78,12 @@ class Fetch {
 }
 FlashEmu.BUILTIN = 'dist/builtin.abc'
 FlashEmu.PLAYERGLOBAL = 'dist/playerglobal.abc'
+FlashEmu.setGlobalFlags({
+  enableDebug: false,
+  enableLog: false,
+  enableWarn: false,
+  enableError: false
+})
 let emu = new FlashEmu({
   async readFile (filename) {
     const res = await fetch(filename)
@@ -98,11 +104,13 @@ emu.runSWF('dist/douyu.swf', false).then(() => {
     // logger.error(StreamSignDataPtr, outptr1, datalen)
     let pSign = CModule.callProperty('read32', StreamSignDataPtr)
     let sign = CModule.callProperty('readString', pSign, datalen)
+    let pOut = CModule.callProperty('read32', outptr1)
+    let out = CModule.callProperty('readString', pOut, 4)
     CModule.callProperty('free', StreamSignDataPtr)
     CModule.callProperty('free', outptr1)
     return {
       sign,
-      outptr1
+      out
     }
   }
 })
