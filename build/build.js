@@ -34,7 +34,14 @@ function build (builds) {
     }
   })
 
-  copy.each(['src/background.js', 'node_modules/flv.js/dist/flv.min.js'], 'dist', {
+  copy.each([
+    'src/flash/builtin.abc',
+    'src/flash/playerglobal.abc',
+    'src/flash/douyu.swf',
+    'src/flash/flashemu.js',
+    'src/background.js',
+    'node_modules/flv.js/dist/flv.min.js'
+  ], 'dist', {
     flatten: true
   }, (err, file) => {
     if (err) {
