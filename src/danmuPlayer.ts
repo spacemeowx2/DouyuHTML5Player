@@ -495,11 +495,14 @@ export class DanmuPlayer implements PlayerUIEventListener {
       type: 'flv',
       url: this.src
     }
-    const playerConfig = {
+    const playerConfig: FlvJs.Config = {
       enableWorker: false,
       deferLoadAfterSourceOpen: true,
-      stashInitialSize: 512*1024,
-      enableStashBuffer: true
+      stashInitialSize: 512 * 1024,
+      enableStashBuffer: true,
+      autoCleanupMinBackwardDuration: 20,
+      autoCleanupMaxBackwardDuration: 40,
+      autoCleanupSourceBuffer: true
     }
     const player = flvjs.createPlayer(sourceConfig, playerConfig)
     player.on(flvjs.Events.ERROR, (e: any, t: any) => {
