@@ -1,6 +1,6 @@
 function hookFetchCode () {
-  let self = this
-  const convertHeader = function convertHeader(headers) {
+  // let self = this
+  const convertHeader = function convertHeader (headers) {
     let out = new Headers()
     for (let key of Object.keys(headers)) {
       out.set(key, headers[key])
@@ -10,72 +10,103 @@ function hookFetchCode () {
   const hideHookStack = stack => {
     return stack.replace(/^\s*at\s.*?hookfetch\.js:\d.*$\n/mg, '')
   }
-  const wrapPort = function wrapPort (port) {
-    let curMethod = ''
-    let curResolve = null
-    let curReject = null
-    let stack = new Error().stack
-    port.onMessage.addListener(msg => {
-      if (msg.method === curMethod) {
-        if (msg.err) {
-          // TODO 潜在安全性问题= =
-          let ctor = new Function('return ' + msg.err.name)()
-          let err = ctor(msg.err.message)
-          err.stack = hideHookStack(stack)
-          // console.log('fetch err', err)
-          curReject(err)
-        } else {
-          curResolve.apply(null, msg.args)
-        }
-      } else {
-        console.error('wtf?')
+  class WrapPort {
+    constructor (port) {
+      this.curMethod = ''
+      this.curResolve = null
+      this.curReject = null
+      this.stack = ''
+      this.port = port
+      this.lastDone = true
+
+      port.onMessage.addListener(msg => this.onMessage(msg))
+    }
+    post (method, args) {
+      if (!this.lastDone) {
+        throw new Error('Last post is not done')
       }
-    })
-    return function (method, args) {
+      this.stack = new Error().stack
       return new Promise((resolve, reject) => {
-        curMethod = method
-        curResolve = resolve
-        curReject = reject
-        port.postMessage({
+        this.lastDone = false
+        this.curMethod = method
+        this.curResolve = resolve
+        this.curReject = reject
+        this.port.postMessage({
           method: method,
           args: args
         })
       })
     }
-  }
-  const bgFetch = function bgFetch(...args) {
-    const port = wrapPort(chrome.runtime.connect({name: "fetch"}))
-    return port('fetch', args).then(r => {
-      console.log(r)
-      let hasReader = false
-      const requireReader = function (after) {
-        if (hasReader) {
-          return Promise.resolve().then(after)
+    onMessage (msg) {
+      if (msg.method === this.curMethod) {
+        if (msg.err) {
+          let err = new Error(msg.err.message)
+          err.oriName = msg.err.name
+          err.stack = hideHookStack(this.stack)
+          // console.log('fetch err', err)
+          this.curReject.call(null, err)
         } else {
-          return port('body.getReader').then(() => hasReader = true).then(after)
+          this.curResolve.apply(null, msg.args)
         }
+        this.curResolve = null
+        this.curReject = null
+        this.lastDone = true
+      } else {
+        console.error('wtf?')
       }
-      r.json = () => port('json')
-      r.headers = convertHeader(r.headers)
-      r.body = {
-        getReader () {
-          return {
-            read () {
-              return requireReader(() => port('reader.read')).then(r => {
-                if (r.done == false) {
-                  r.value = new Uint8Array(r.value)
-                }
-                return r
-              })
-            },
-            cancel () {
-              return requireReader(() => port('reader.cancel'))
-            }
+    }
+  }
+  class PortReader {
+    constructor (port) {
+      this.port = port
+      this.hasReader = false
+    }
+    _requireReader () {
+      if (this.hasReader) {
+        return Promise.resolve()
+      } else {
+        return this.port.post('body.getReader').then(() => this.hasReader = true)
+      }
+    }
+    read () {
+      return this._requireReader()
+        .then(() => this.port.post('reader.read'))
+        .then(r => {
+          if (r.done == false) {
+            r.value = new Uint8Array(r.value)
           }
-        }
-      }
-      return r
-    })
+          return r
+        })
+    }
+    cancel () {
+      return this._requireReader().then(() => this.port.post('reader.cancel'))
+    }
+  }
+  class PortBody {
+    constructor (port) {
+      this.port = port
+    }
+    getReader () {
+      return new PortReader(this.port)
+    }
+  }
+  class PortFetch {
+    constructor () {
+      this.port = new WrapPort(chrome.runtime.connect({name: 'fetch'}))
+    }
+    fetch (...args) {
+      return this.port.post('fetch', args).then(r => {
+        console.log(r)
+        r.json = () => this.port.post('json')
+        r.headers = convertHeader(r.headers)
+        r.body = new PortBody(this.port)
+        return r
+      })
+    }
+  }
+  const bgFetch = function bgFetch (...args) {
+    const fetch = new PortFetch()
+    return fetch.fetch(...args)
   }
   function hookFetch () {
     if (fetch !== bgFetch) {
