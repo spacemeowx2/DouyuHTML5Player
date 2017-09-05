@@ -83,24 +83,40 @@ FlashEmu.setGlobalFlags({
   enableWarn: false,
   enableError: false
 })
-let emu = new FlashEmu({
-  readFile (filename) {
-    return fetch(filename)
-      .then(res => res.arrayBuffer())
-      .then(buf => new Uint8Array(buf).buffer)
+class Signer {
+  static init () {
+    if (!Signer.emu) {
+      const emu = new FlashEmu({
+        readFile (filename) {
+          return fetch(filename)
+            .then(res => res.arrayBuffer())
+            .then(buf => new Uint8Array(buf).buffer)
+        }
+      })
+      Signer.emu = emu
+      return emu.runSWF('dist/douyu.swf', false).then(() => {
+        const CModule = emu.getProperty('sample.mp', 'CModule')
+        const xx = emu.getPublicClass('mp')
+        Signer.CModule = CModule
+        Signer.xx = xx
+        CModule.callProperty('startAsync')
+        Signer.ready = true
+      })
+    }
   }
-})
-let douyuSign = null
-emu.runSWF('dist/douyu.swf', false).then(() => {
-  let CModule = emu.getProperty('sample.mp', 'CModule')
-  let xx = emu.getPublicClass('mp')
-  CModule.callProperty('startAsync')
-  douyuSign = (roomId, time, did) => {
+  constructor (port) {
+    this.port = port
+    Signer.init()
+  }
+  douyuSign (roomId, time, did) {
+    const CModule = Signer.CModule
+    const xx = Signer.xx
+
     let StreamSignDataPtr = CModule.callProperty('malloc', 4)
     let outptr1 = CModule.callProperty('malloc', 4)
 
     let datalen = xx.callProperty('sub_2', parseInt(roomId), parseInt(time), did.toString(), outptr1, StreamSignDataPtr)
-    // logger.error(StreamSignDataPtr, outptr1, datalen)
+
     let pSign = CModule.callProperty('read32', StreamSignDataPtr)
     let sign = CModule.callProperty('readString', pSign, datalen)
     let pOut = CModule.callProperty('read32', outptr1)
@@ -113,20 +129,15 @@ emu.runSWF('dist/douyu.swf', false).then(() => {
       cptl: out
     }
   }
-})
-class Signer {
-  constructor (port) {
-    this.port = port
-  }
   onDisconnect () {
 
   }
   onMessage (msg) {
     let args = []
     if (msg.method === 'query') {
-      args.push(!!douyuSign)
+      args.push(!!Signer.ready)
     } else if (msg.method === 'sign') {
-      args.push(douyuSign(...msg.args))
+      args.push(this.douyuSign(...msg.args))
     }
     this.port.postMessage({
       method: msg.method,
@@ -134,6 +145,7 @@ class Signer {
     })
   }
 }
+Signer.init()
 chrome.runtime.onConnect.addListener(port => {
   let handler
   if (port.name === 'fetch') {

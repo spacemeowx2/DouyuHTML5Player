@@ -1,12 +1,12 @@
 import { ISignerResult } from './source'
-
+import { runtime } from '../chrome'
 export enum SignerState {
   None,
   Loaded,
   Ready,
   Timeout
 }
-type WrapPort = (method: string, ...args: any[]) => Promise<any[]>
+type WrapPort = (method: string, ...args: any[]) => Promise<any>
 function wrapPort (port: chrome.runtime.Port) {
   let curMethod = ''
   let curResolve: (value?: any[] | PromiseLike<any[]>) => void = null
@@ -14,7 +14,7 @@ function wrapPort (port: chrome.runtime.Port) {
   let stack = new Error().stack
   port.onMessage.addListener((msg: any) => {
     if (msg.method === curMethod) {
-      curResolve(msg.args)
+      curResolve(msg.args[0])
     } else {
       curReject('wtf')
       console.error('wtf?')
@@ -72,7 +72,7 @@ class BackgroundSigner {
     }
   }
   static async sign (rid: string, tt: number, did: string): Promise<ISignerResult> {
-    return (await this._port('sign', rid, tt, did))[0]
+    return await this._port('sign', rid, tt, did)
   }
   static get state () {
     return BackgroundSigner._state
@@ -84,7 +84,7 @@ class BackgroundSigner {
     return new Promise<void>((resolve, reject) => {
       BackgroundSigner._resolve = resolve
       BackgroundSigner._reject = reject
-      const port = wrapPort(chrome.runtime.connect({name: "signer"}))
+      const port = wrapPort(runtime.connect({name: "signer"}))
       BackgroundSigner._port = port
       let iid = window.setInterval(async () => {
         let ret = await port('query')
