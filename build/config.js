@@ -7,19 +7,21 @@ const replace = require('rollup-plugin-replace')
 const sites = ['douyu']
 let builds = {}
 sites.forEach(site => {
-  builds[`${site}-cs`] = () => genConfig({
-    entry: path.resolve(__dirname, `../src/${site}/contentScript.ts`),
-    dest: path.resolve(__dirname, `../dist/${site}CS.js`),
-    format: 'umd'
-  })
-  builds[`${site}-inject`] = () => genConfig({
-    entry: path.resolve(__dirname, `../src/${site}/inject.ts`),
-    dest: path.resolve(__dirname, `../dist/${site}Inject.js`),
-    format: 'umd'
-  })
+  builds[`${site}-cs`] = () => genConfig(
+    `${site}/contentScript.ts`,
+    `${site}CS.js`,
+    { format: 'umd' }
+  )
+  builds[`${site}-inject`] = () => genConfig(
+    `${site}/inject.ts`,
+    `${site}Inject.js`,
+    { format: 'umd' }
+  )
 })
 
-function genConfig (opts) {
+function genConfig (input, output, opts) {
+  opts.entry = path.resolve(__dirname, '../src/', input)
+  opts.dest = path.resolve(__dirname, '../dist/', output)
   if (!process.env.REPLACE) {
     process.env.REPLACE = JSON.stringify({
       DEBUG: JSON.stringify(false),
