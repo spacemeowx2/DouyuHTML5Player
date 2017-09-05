@@ -252,10 +252,17 @@ export function setSync (item: any) {
   })
 }
 interface Setting {
-  blacklist: string[]
+  blacklist?: string[]
 }
 export async function getSetting (): Promise<Setting> {
-  const setting = await getSync()
+  let setting: Setting
+  try {
+    setting = await getSync()
+  } catch (e) {
+  }
+  if (!setting) {
+    setting = {}
+  }
   if (!setting.blacklist) {
     setting.blacklist = []
   }
