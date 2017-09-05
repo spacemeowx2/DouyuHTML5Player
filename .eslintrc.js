@@ -8,6 +8,10 @@ module.exports = {
   env: {
     browser: true
   },
+  globals: {
+    chrome: true,
+    FlashEmu: true
+  },
   plugins: [],
   // add your custom rules here
   'rules': {

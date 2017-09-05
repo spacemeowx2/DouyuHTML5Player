@@ -1,4 +1,3 @@
-/* global FlashEmu:false */
 function convertHeader (headers) {
   let out = {}
   for (let key of headers.keys()) {

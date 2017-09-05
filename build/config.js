@@ -1,6 +1,5 @@
 const nodeResolve = require('rollup-plugin-node-resolve')
 const commonjs = require('rollup-plugin-commonjs')
-const buble = require('rollup-plugin-buble')
 const path = require('path')
 const typescript = require('rollup-plugin-typescript')
 const replace = require('rollup-plugin-replace')
@@ -36,11 +35,6 @@ function genConfig (opts) {
     commonjs(),
     typescript({
       typescript: require('typescript')
-    }),
-    buble({
-      transforms: {
-        dangerousForOf: true
-      }
     })
   ]
   opts.context = 'window'

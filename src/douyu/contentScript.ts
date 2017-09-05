@@ -6,8 +6,9 @@ import { DouyuSource, ISignerResult } from './source'
 import { getACF } from './api'
 import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
-import { Signer, SignerState } from './signer'
+import { getSigner, SignerState } from './signer'
 import { getDialog } from '../donate'
+const Signer = getSigner()
 
 declare var window: {
   __space_inject: {
@@ -224,19 +225,10 @@ const loadVideo = (roomId: string, replace: (el: Element) => void) => {
 let danmuPlayer: DouyuDanmuPlayer = null
 let signerLoaded = new DelayNotify(false)
 
-Signer.onStateChanged = (state: SignerState) => {
-  let data = false
-  if (state === SignerState.Ready) {
-    data = true
-  } else if (state === SignerState.Timeout) {
-    data = false
-  } else {
-    return
-  }
+Signer.init().then(() => true).catch(() => false).then((data: boolean) => {
   console.log('SIGNER_READY', data)
   signerLoaded.notify(data)
-}
-Signer.init()
+})
 onMessage('DANMU', data => {
   danmuPlayer && danmuPlayer.onDanmuPkg(data)
 })
@@ -256,11 +248,10 @@ onMessage('VIDEOID', async data => {
         await setSetting(setting)
         location.reload()
     }
-  });
-
+  })
 
   if (!await signerLoaded.wait()) {
-    console.warn('需要开启 Flash 才能获取直播地址')
+    console.warn('加载签名程序失败, 无法获取视频地址')
     return
   }
 

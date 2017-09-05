@@ -8,7 +8,7 @@
     "preserveConstEnums": true,
     "outDir": "./dist/ts/",
     "sourceMap": true,
-    "target": "es5",
+    "target": "es6",
     "experimentalDecorators": true,
     "allowJs": true,
     "importHelpers": true

@@ -1,7 +1,4 @@
 import { ISignerResult } from './source'
-declare var window: {
-  [key: string]: any
-} & Window
 
 export enum SignerState {
   None,
@@ -35,51 +32,94 @@ function wrapPort (port: chrome.runtime.Port) {
     })
   }
 }
-export class Signer {
-  static _port: WrapPort
-  static _state: SignerState = SignerState.None
-  static onStateChanged: (newState: SignerState) => void = () => null
+interface ISigner {
+  // onStateChanged: SignerStateListener
+  state: SignerState
+  sign (rid: string, tt: number, did: string): Promise<ISignerResult>
+  init (): Promise<void>
+}
+class BackgroundSigner {
+  private static _inited: boolean = false
+  private static _port: WrapPort
+  private static _state: SignerState = SignerState.None
+  private static _resolve: Function
+  private static _reject: Function
+  private static _clean () {
+    BackgroundSigner._resolve = null
+    BackgroundSigner._reject = null
+  }
+  private static onStateChanged (state: SignerState) {
+    if (state === SignerState.Ready) {
+      BackgroundSigner._inited = true
+      BackgroundSigner._resolve()
+      BackgroundSigner._clean()
+    } else if (state === SignerState.Timeout) {
+      BackgroundSigner._reject()
+      BackgroundSigner._clean()
+    } else {
+      return
+    }
+  }
+  private static setState (val: SignerState) {
+    if (BackgroundSigner._state === SignerState.Timeout) { // timeout 时不再加载
+      return
+    }
+    if (val !== BackgroundSigner._state) {
+      BackgroundSigner._state = val
+      this.onStateChanged(BackgroundSigner.state)
+    } else {
+      BackgroundSigner._state = val
+    }
+  }
   static async sign (rid: string, tt: number, did: string): Promise<ISignerResult> {
     return (await this._port('sign', rid, tt, did))[0]
   }
-  static _flash: any
-  static set state (val: SignerState) {
-    if (Signer._state === SignerState.Timeout) { // timeout 时不再加载
-      return
-    }
-    if (val !== Signer._state) {
-      Signer._state = val
-      this.onStateChanged(Signer.state)
-    } else {
-      Signer._state = val
-    }
-  }
   static get state () {
-    return Signer._state
+    return BackgroundSigner._state
   }
-  static init () {
-    const port = wrapPort(chrome.runtime.connect({name: "signer"}))
-    Signer._port = port
-    let iid = window.setInterval(async () => {
-      let ret = await port('query')
-      console.log('query', ret)
-      if (ret) {
-        Signer.state = SignerState.Loaded
-        Signer.state = SignerState.Ready
+  static init (): Promise<void> {
+    if (BackgroundSigner._inited) {
+      return Promise.resolve()
+    }
+    return new Promise<void>((resolve, reject) => {
+      BackgroundSigner._resolve = resolve
+      BackgroundSigner._reject = reject
+      const port = wrapPort(chrome.runtime.connect({name: "signer"}))
+      BackgroundSigner._port = port
+      let iid = window.setInterval(async () => {
+        let ret = await port('query')
+        console.log('query', ret)
+        if (ret) {
+          BackgroundSigner.setState(SignerState.Loaded)
+          BackgroundSigner.setState(SignerState.Ready)
+          if (iid !== null) {
+            window.clearInterval(iid)
+            iid = null
+          }
+        }
+      }, 100)
+      window.setTimeout(() => {
+        if (this.state !== SignerState.Ready) {
+          this.setState(SignerState.Timeout)
+        }
         if (iid !== null) {
           window.clearInterval(iid)
           iid = null
         }
-      }
-    }, 100)
-    window.setTimeout(() => {
-      if (this.state !== SignerState.Ready) {
-        this.state = SignerState.Timeout
-      }
-      if (iid !== null) {
-        window.clearInterval(iid)
-        iid = null
-      }
-    }, 15 * 1000)
+      }, 15 * 1000)
+    })
+  }
+}
+class SharedWorkerSigner {
+  private static _state: SignerState = SignerState.None
+  static get state () {
+    return SharedWorkerSigner._state
+  }
+}
+export function getSigner (): ISigner {
+  if (USERSCRIPT) {
+    return SharedWorkerSigner
+  } else {
+    return BackgroundSigner
   }
 }
