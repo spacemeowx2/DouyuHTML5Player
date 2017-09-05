@@ -70,16 +70,6 @@ function build (builds) {
 function buildEntry (config) {
   return rollup.rollup(config).then(bundle => {
     const code = bundle.generate(config).code
-    // const minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
-    //   fromString: true,
-    //   output: {
-    //     screw_ie8: true,
-    //     ascii_only: true
-    //   },
-    //   compress: {
-    //     pure_funcs: null// ['makeMap']
-    //   }
-    // }).code
     return write(config.dest, code)
   })
 }

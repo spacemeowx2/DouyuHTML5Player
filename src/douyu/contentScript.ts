@@ -8,6 +8,7 @@ import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendM
 import { TypeState } from 'TypeState'
 import { getSigner, SignerState } from './signer'
 import { getDialog } from '../donate'
+import { runtime } from '../chrome'
 const Signer = getSigner()
 
 declare var window: {
@@ -258,10 +259,13 @@ onMessage('VIDEOID', async data => {
   try {
     const setting = await getSetting()
     if (setting.blacklist.indexOf(roomId) !== -1) { // 存在黑名单
-      if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({
+      if (runtime.sendMessage) {
+        runtime.sendMessage({
           type: 'disable'
         })
+      }
+      if (!USERSCRIPT) {
+
       }
       return
     }

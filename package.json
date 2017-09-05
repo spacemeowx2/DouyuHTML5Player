@@ -8,6 +8,7 @@
     "dev:douyui": "rollup --environment TARGET:douyu-inject -w -c build/config.js",
     "build": "node build/build.js",
     "pack": "node build/pack.js",
+    "build-us": "node build/build-userscript.js",
     "dev": "tsc -w -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
