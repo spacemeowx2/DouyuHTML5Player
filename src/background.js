@@ -85,10 +85,10 @@ FlashEmu.setGlobalFlags({
   enableError: false
 })
 let emu = new FlashEmu({
-  async readFile (filename) {
-    const res = await fetch(filename)
-    const buf = await res.arrayBuffer()
-    return new Uint8Array(buf).buffer
+  readFile (filename) {
+    return fetch(filename)
+      .then(res => res.arrayBuffer())
+      .then(buf => new Uint8Array(buf).buffer)
   }
 })
 let douyuSign = null
