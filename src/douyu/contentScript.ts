@@ -98,21 +98,23 @@ class DouyuDanmuPlayer extends DanmuPlayer {
     this.ui = new DouyuPlayerUI(this, this.state)
   }
   onDanmuPkg (pkg: any) {
-    const example = {
-      "type": "chatmsg",
-      "rid": "510541",
-      "ct": "1", // 酬勤
-      "uid": "59839409",
-      "nn": "登辛",
-      "txt": "3ds没有鼓棒先生吗",
-      "cid": "ce554df5bf2841e41459070000000000",
-      "ic": "avatar/face/201607/27/12d23d30a9a7790e955d7affc54335ad",
-      "level": "17",
-      "gt": "2", //
-      "rg": "4", //
-      "el": "eid@A=1500000005@Setp@A=1@Ssc@A=1@Sef@A=0@S/"
+    if (DEBUG) {
+      const example = {
+        "type": "chatmsg",
+        "rid": "510541",
+        "ct": "1", // 酬勤
+        "uid": "59839409",
+        "nn": "登辛",
+        "txt": "3ds没有鼓棒先生吗",
+        "cid": "ce554df5bf2841e41459070000000000",
+        "ic": "avatar/face/201607/27/12d23d30a9a7790e955d7affc54335ad",
+        "level": "17",
+        "gt": "2", //
+        "rg": "4", //
+        "el": "eid@A=1500000005@Setp@A=1@Ssc@A=1@Sef@A=0@S/"
+      }
     }
-    const getColor = (c: number) => ["#ff0000", "#1e87f0", "#7ac84b", "#ff7f00", "#9b39f4", "#ff69b4"][c-1]
+    const getColor = (c: number) => ['#ff0000', '#1e87f0', '#7ac84b', '#ff7f00', '#9b39f4', '#ff69b4'][c-1]
     if (pkg.txt.length > 0) {
       let cls = []
       let color = getColor(pkg.col) || '#ffffff'

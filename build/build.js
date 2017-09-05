@@ -3,9 +3,32 @@
 const fs = require('fs')
 const path = require('path')
 const rollup = require('rollup')
-const copy = require('copy')
 const less = require('less')
 // const uglify = require('uglify-js')
+const copy = (from, to) => {
+  const c = require('copy')
+  return new Promise((resolve, reject) => {
+    c(from, to, (err, file) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(file)
+      }
+    })
+  })
+}
+const copyEach = (from, to, opts) => {
+  const c = require('copy')
+  return new Promise((resolve, reject) => {
+    c.each(from, to, opts, (err, file) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(file)
+      }
+    })
+  })
+}
 
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
@@ -20,40 +43,28 @@ function build (builds) {
   let built = 0
   const total = builds.length
   const next = () => {
-    buildEntry(builds[built]).then(() => {
+    return buildEntry(builds[built]).then(() => {
       built++
       if (built < total) {
-        next()
+        return next()
       }
-    }).catch(logError)
+    })
   }
-
-  copy('src/img/*', 'dist/img', (err, file) => {
-    if (err) {
-      console.error(err)
-    }
-  })
-
-  copy.each([
+  const fileList = [
     'src/flash/builtin.abc',
     'src/flash/playerglobal.abc',
     'src/flash/douyu.swf',
     'src/flash/flashemu.js',
     'src/background.js',
     'node_modules/flv.js/dist/flv.min.js'
-  ], 'dist', {
-    flatten: true
-  }, (err, file) => {
-    if (err) {
-      console.error(err)
-    }
-  })
-
-  read('src/danmu.less')
+  ]
+  return copy('src/img/*', 'dist/img')
+    .then(() => copyEach(fileList, 'dist', {flatten: true}))
+    .then(() => read('src/danmu.less'))
     .then(lessSrc => less.render(lessSrc))
     .then(css => write('dist/danmu.css', css.css))
+    .then(() => next())
     .catch(logError)
-  next()
 }
 
 function buildEntry (config) {

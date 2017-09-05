@@ -16,5 +16,8 @@
   "files": [
     "src/douyu/inject.ts",
     "src/douyu/contentScript.ts"
+  ],
+  "include": [
+    "typings/**/*.d.ts"
   ]
 }

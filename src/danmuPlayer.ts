@@ -489,7 +489,7 @@ export class DanmuPlayer implements PlayerUIEventListener {
   async load () {
     this.src = await this.listener.getSrc()
   }
-  createFlvjs () {    
+  createFlvjs () {
     const sourceConfig = {
       isLive: true,
       type: 'flv',

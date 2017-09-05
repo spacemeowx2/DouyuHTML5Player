@@ -5,6 +5,9 @@ const pageAction = {
     })
   }
 }
+export function hasChrome () {
+  return typeof chrome !== 'undefined'
+}
 export default {
   pageAction
 }

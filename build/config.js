@@ -3,6 +3,7 @@ const commonjs = require('rollup-plugin-commonjs')
 const buble = require('rollup-plugin-buble')
 const path = require('path')
 const typescript = require('rollup-plugin-typescript')
+const replace = require('rollup-plugin-replace')
 
 const sites = ['douyu']
 let builds = {}
@@ -19,8 +20,15 @@ sites.forEach(site => {
   })
 })
 
-function genConfig(opts) {
+function genConfig (opts) {
+  if (!process.env.REPLACE) {
+    process.env.REPLACE = JSON.stringify({
+      DEBUG: JSON.stringify(false),
+      USERSCRIPT: JSON.stringify(false)
+    })
+  }
   opts.plugins = [
+    replace(JSON.parse(process.env.REPLACE)),
     nodeResolve({
       skip: ['flv.js'],
       extensions: ['.ts', '.js']
