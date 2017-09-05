@@ -116,10 +116,12 @@ class SharedWorkerSigner {
     return SharedWorkerSigner._state
   }
 }
-export function getSigner (): ISigner {
-  if (USERSCRIPT) {
-    return SharedWorkerSigner
-  } else {
-    return BackgroundSigner
-  }
+let Signer: ISigner
+if (USERSCRIPT) {
+  Signer = SharedWorkerSigner
+} else {
+  Signer = BackgroundSigner
+}
+export {
+  Signer
 }

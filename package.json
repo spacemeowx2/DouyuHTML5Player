@@ -25,7 +25,6 @@
   "license": "MIT",
   "dependencies": {
     "flv.js": "^1.3.3",
-    "less": "^2.7.1",
     "tslib": "^1.6.0"
   },
   "devDependencies": {

@@ -6,10 +6,9 @@ import { DouyuSource, ISignerResult } from './source'
 import { getACF } from './api'
 import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
-import { getSigner, SignerState } from './signer'
+import { Signer, SignerState } from './signer'
 import { getDialog } from '../donate'
 import { runtime } from '../chrome'
-const Signer = getSigner()
 
 declare var window: {
   __space_inject: {
