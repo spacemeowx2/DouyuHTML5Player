@@ -10,12 +10,12 @@ sites.forEach(site => {
   builds[`${site}-cs`] = () => genConfig(
     `${site}/contentScript.ts`,
     `${site}CS.js`,
-    { format: 'umd' }
+    { format: 'iife' }
   )
   builds[`${site}-inject`] = () => genConfig(
     `${site}/inject.ts`,
     `${site}Inject.js`,
-    { format: 'umd' }
+    { format: 'iife' }
   )
 })
 
