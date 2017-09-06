@@ -211,21 +211,16 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
 }
 
 const loadVideo = (roomId: string, replace: (el: Element) => void) => {
-  console.log(1)
   const danmuPlayer = new DouyuDanmuPlayer(roomId)
-  console.log(2)
 
   danmuPlayer.mgr.parsePic = s => s.replace(
     /\[emot:dy(.*?)\]/g,
     (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
   )
-  console.log(3)
 
   replace(danmuPlayer.ui.el)
-  console.log(4)
 
   makeMenu(danmuPlayer, danmuPlayer.source)
-  console.log(5)
 
   window.danmu = danmuPlayer
 

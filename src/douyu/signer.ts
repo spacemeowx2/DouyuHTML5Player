@@ -112,7 +112,7 @@ class BackgroundSigner {
 }
 
 let Signer: ISigner
-if (true) {
+if (USERSCRIPT) {
   const DB_NAME = 'shared-worker-signer'
   const DB_VERSION = 1
   const DB_STORE_NAME = 'cache'
