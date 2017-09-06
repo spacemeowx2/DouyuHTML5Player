@@ -195,8 +195,6 @@ export function sendMessage<T> (type: string, data: any) {
   })
 }
 window.addEventListener('message', async event => {
-  if (event.source != window)
-    return
   const data = event.data
   if (data.cb) {
     let cb = msgCallbacks[data.cbId]

@@ -184,11 +184,17 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
       }
     }))
   }
+  let mGetURL: (file: string) => string
+  if (USERSCRIPT) {
+    mGetURL = file => 'https://imspace.nos-eastchina1.126.net/img/' + file
+  } else {
+    mGetURL = file => getURL('dist/img/' + file)
+  }
   const dialog = getDialog('捐赠', '你的支持是我最大的动力.', [{
-    src: getURL('dist/img/alipay.png'),
+    src: mGetURL('alipay.png'),
     desc: '支付宝'
   }, {
-    src: getURL('dist/img/wechat.png'),
+    src: mGetURL('wechat.png'),
     desc: '微信'
   }])
   const donate = () => {
@@ -205,16 +211,21 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
 }
 
 const loadVideo = (roomId: string, replace: (el: Element) => void) => {
+  console.log(1)
   const danmuPlayer = new DouyuDanmuPlayer(roomId)
+  console.log(2)
 
   danmuPlayer.mgr.parsePic = s => s.replace(
     /\[emot:dy(.*?)\]/g,
     (_, i) => `<img style="height:1em" src="https://shark.douyucdn.cn/app/douyu/res/page/room-normal/face/dy${i}.png?v=20161103">`// `<div style="display:inline-block;background-size:1em;width:1em;height:1em;" class="face_${i}"></div>`
   )
+  console.log(3)
 
   replace(danmuPlayer.ui.el)
+  console.log(4)
 
   makeMenu(danmuPlayer, danmuPlayer.source)
+  console.log(5)
 
   window.danmu = danmuPlayer
 
@@ -250,11 +261,13 @@ onMessage('VIDEOID', async data => {
     }
   })
 
+  console.log('wait signer')
   if (!await signerLoaded.wait()) {
     console.warn('加载签名程序失败, 无法获取视频地址')
     return
   }
 
+  console.log('start replace')
   try {
     const setting = await getSetting()
     if (setting.blacklist.indexOf(roomId) !== -1) { // 存在黑名单
@@ -262,9 +275,6 @@ onMessage('VIDEOID', async data => {
         runtime.sendMessage({
           type: 'disable'
         })
-      }
-      if (!USERSCRIPT) {
-
       }
       return
     }

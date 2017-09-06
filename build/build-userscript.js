@@ -47,7 +47,7 @@ function embedURLToCSS (base, css) {
   })
 }
 function makeUserScript (files, manifest) {
-  let { matches, runAt, js } = manifest.content_scripts[0]
+  let { matches, run_at: runAt, js } = manifest.content_scripts[0]
   matches = matches.map(i => `// @match ${i}`).join('\r\n')
   const hostRoot = 'https://ojiju7xvu.qnssl.com/d5hp'
   const overrideXHR = `

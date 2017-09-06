@@ -96,8 +96,10 @@ function hookFetchCode () {
     }
     fetch (...args) {
       return this.port.post('fetch', args).then(r => {
-        console.log(r)
         r.json = () => this.port.post('json')
+        r.arrayBuffer = () => this.port.post('arrayBuffer').then(buf => {
+          return new Uint8Array(buf).buffer
+        })
         r.headers = convertHeader(r.headers)
         r.body = new PortBody(this.port)
         return r

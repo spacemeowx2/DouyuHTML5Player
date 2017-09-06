@@ -35,6 +35,10 @@ class Fetch {
       })
     } else if (msg.method === 'json') {
       chain = chain.then(() => this.response.json())
+    } else if (msg.method === 'arrayBuffer') {
+      chain = chain.then(() => this.response.arrayBuffer()).then(buf => {
+        return Array.from(new Uint8Array(buf))
+      })
     } else if (msg.method === 'body.getReader') {
       chain = chain.then(() => {
         this.reader = this.response.body.getReader()
