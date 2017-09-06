@@ -21,6 +21,7 @@ function build () {
   let out = {}
   const next = () => {
     const config = builds[built]
+    config.format = 'umd'
     return rollup.rollup(config)
       .then(bundle => {
         const code = bundle.generate(config).code
@@ -100,12 +101,17 @@ window.fetch = function (url, config) {
   Object.assign(conf, config || { method: 'GET' })
   conf.url = url
   conf.data = config ? config.body : null
+  conf.responseType = 'arraybuffer'
   return new Promise((resolve, reject) => {
     conf.onload = (response) => {
       if (response.status === 200) {
         resolve({
           json () {
-            return Promise.resolve(JSON.parse(response.responseText))
+            const enc = new TextDecoder('utf-8')
+            return Promise.resolve(JSON.parse(enc.decode(new Uint8Array(response.response))))
+          },
+          arrayBuffer () {
+            return Promise.resolve(response.response)
           }
         })
       } else {
@@ -121,7 +127,7 @@ window.XMLHttpRequest = GMXMLHttpRequest`
 // @downloadURL ${hostRoot}/latest.user.js
 // @icon ${hostRoot}/icon.png
 // @name ${manifest.name}
-// @require https://cdn.bootcss.com/flv.js/1.3.0/flv.min.js
+// @require https://cdn.bootcss.com/flv.js/1.3.3/flv.min.js
 // @namespace http://imspace.cn/gms
 // @run-at ${runAt}
 // @version ${manifest.version}
