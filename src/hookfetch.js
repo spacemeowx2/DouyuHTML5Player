@@ -10,6 +10,15 @@ function hookFetchCode () {
   const hideHookStack = stack => {
     return stack.replace(/^\s*at\s.*?hookfetch\.js:\d.*$\n/mg, '')
   }
+  const base64ToUint8 = (b64) => {
+    const s = atob(b64)
+    const length = s.length
+    let ret = new Uint8Array(length)
+    for (let i = 0; i < length; i++) {
+      ret[i] = s.charCodeAt(i)
+    }
+    return ret
+  }
   class WrapPort {
     constructor (port) {
       this.curMethod = ''
@@ -73,7 +82,7 @@ function hookFetchCode () {
         .then(() => this.port.post('reader.read'))
         .then(r => {
           if (r.done == false) {
-            r.value = new Uint8Array(r.value)
+            r.value = base64ToUint8(r.value)
           }
           return r
         })

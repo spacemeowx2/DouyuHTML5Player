@@ -1,3 +1,11 @@
+function uint8ToBase64 (buffer) {
+  let binary = ''
+  let len = buffer.byteLength
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(buffer[i])
+  }
+  return btoa(binary)
+}
 function convertHeader (headers) {
   let out = {}
   for (let key of headers.keys()) {
@@ -48,7 +56,7 @@ class Fetch {
       chain = chain.then(() => this.reader.read()).then(r => {
         // console.log('read', r)
         if (r.done === false) {
-          r.value = Array.from(r.value)
+          r.value = uint8ToBase64(r.value)
         }
         return r
       })
