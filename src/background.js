@@ -13,11 +13,72 @@ function convertHeader (headers) {
   }
   return out
 }
-class Fetch {
+class IPort {
+  constructor () {
+    this.canTransfer = false
+  }
+  /**
+   * 
+   * @param {Service} service 
+   */
+  bindService (service) {
+    throw new Error('not impl')
+  }
+  /**
+   * 
+   * @param {*} data 
+   * @param {any[]} transfer 
+   */
+  postMessage (data, transfer = undefined) {
+    throw new Error('not impl')
+  }
+}
+class ChromePort extends IPort {
+  /**
+   * 
+   * @param {chrome.runtime.Port} port
+   */
   constructor (port) {
+    super()
+    this.port = port
+    this.canTransfer = false
+  }
+  /**
+   * 
+   * @param {Service} service 
+   */
+  bindService (service) {
+    this.port.onMessage.addListener((msg) => service.onMessage(msg))
+    this.port.onDisconnect.addListener(() => service.onDisconnect())
+  }
+  postMessage (data, transfer = undefined) {
+    this.port.postMessage(data)
+  }
+}
+class Service {
+  /**
+   * 
+   * @param {IPort} port 
+   */
+  constructor (port) {
+    this.port = port
+  }
+  onMessage (msg) {
+    throw new Error('not impl')
+  }
+  onDisconnect () {
+    throw new Error('not impl')
+  }
+}
+class Fetch extends Service {
+  /**
+   * 
+   * @param {IPort} port 
+   */
+  constructor (port) {
+    super(port)
     this.reader = null
     this.response = null
-    this.port = port
   }
   onDisconnect () {
     if (this.reader) {
@@ -27,6 +88,7 @@ class Fetch {
   onMessage (msg) {
     // console.log('fetch new msg', msg)
     let chain = Promise.resolve()
+    let transfer = []
     if (msg.method === 'fetch') {
       chain = chain.then(() => fetch.apply(null, msg.args)).then(r => {
         this.response = r
@@ -56,7 +118,11 @@ class Fetch {
       chain = chain.then(() => this.reader.read()).then(r => {
         // console.log('read', r)
         if (r.done === false) {
-          r.value = uint8ToBase64(r.value)
+          if (this.port.canTransfer) {
+            transfer.push(r.value)
+          } else {
+            r.value = uint8ToBase64(r.value)
+          }
         }
         return r
       })
@@ -72,7 +138,7 @@ class Fetch {
         args: args
       }
       // console.log('fetch send msg', outMsg)
-      this.port.postMessage(outMsg)
+      this.port.postMessage(outMsg, transfer)
     }).catch(e => {
       console.log(e)
       this.port.postMessage({
@@ -95,7 +161,7 @@ FlashEmu.setGlobalFlags({
   enableWarn: false,
   enableError: false
 })
-class Signer {
+class Signer extends Service {
   static init () {
     if (!Signer.emu) {
       const emu = new FlashEmu({
@@ -116,8 +182,12 @@ class Signer {
       })
     }
   }
+  /**
+   * 
+   * @param {IPort} port 
+   */
   constructor (port) {
-    this.port = port
+    super(port)
     Signer.init()
   }
   douyuSign (roomId, time, did) {
@@ -159,16 +229,19 @@ class Signer {
 }
 Signer.init()
 chrome.runtime.onConnect.addListener(port => {
-  let handler
+  /**
+   * @type {Service}
+   */
+  let service
   if (port.name === 'fetch') {
     console.log('new fetch port', port)
-    handler = new Fetch(port)
+    service = new Fetch(port)
   } else if (port.name === 'signer') {
     console.log('new signer port', port)
-    handler = new Signer(port)
+    service = new Signer(port)
   }
-  port.onDisconnect.addListener(() => handler.onDisconnect())
-  port.onMessage.addListener(msg => handler.onMessage(msg))
+  const iPort = new ChromePort(port)
+  iPort.bindService(service)
 })
 chrome.pageAction.onClicked.addListener(tab => {
   chrome.tabs.sendMessage(tab.id, {
