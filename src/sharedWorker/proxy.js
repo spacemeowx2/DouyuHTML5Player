@@ -1,4 +1,4 @@
-const cPort = new SharedWorker(chrome.runtime.getURL('bridgeWorker.js')).port
+const cPort = new SharedWorker(chrome.runtime.getURL('dist/bridgeWorker.js')).port
 cPort.onmessage = ({data}) => {
   const parentWin = window.parent
   let transfer

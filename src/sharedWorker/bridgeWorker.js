@@ -1,5 +1,5 @@
 let bgPort = null
-self.onconnect = ({ports}) => {
+onconnect = ({ports}) => {
   for (let port of ports) {
     port.start()
     port.onmessage = ({data}) => {

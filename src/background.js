@@ -6,7 +6,14 @@ function uint8ToBase64 (buffer) {
   }
   return btoa(binary)
 }
-function convertHeader (headers) {
+function objectToHeader (headers) {
+  let out = new Headers()
+  for (let key of Object.keys(headers)) {
+    out.set(key, headers[key])
+  }
+  return out
+}
+function headerToObject (headers) {
   let out = {}
   for (let key of headers.keys()) {
     out[key] = headers.get(key)
@@ -33,6 +40,32 @@ class IPort {
     throw new Error('not impl')
   }
 }
+class WorkerPort extends IPort {
+  /**
+   * @param {MessagePort} port 
+   */
+  constructor (port) {
+    super()
+    this.port = port
+    this.canTransfer = true
+  }
+  /**
+   * @param {Service} service 
+   */
+  bindService (service) {
+    this.port.onmessage = ({data}) => service.onMessage(data)
+    this.port.onmessageerror = () => service.onDisconnect()
+    this.port.start()
+  }
+  /**
+   * 
+   * @param {*} data 
+   * @param {any[]} transfer 
+   */
+  postMessage (data, transfer = undefined) {
+    this.port.postMessage(data, transfer)
+  }
+}
 class ChromePort extends IPort {
   /**
    * 
@@ -51,6 +84,11 @@ class ChromePort extends IPort {
     this.port.onMessage.addListener((msg) => service.onMessage(msg))
     this.port.onDisconnect.addListener(() => service.onDisconnect())
   }
+  /**
+   * 
+   * @param {*} data 
+   * @param {any[]} transfer 
+   */
   postMessage (data, transfer = undefined) {
     this.port.postMessage(data)
   }
@@ -90,7 +128,11 @@ class Fetch extends Service {
     let chain = Promise.resolve()
     let transfer = []
     if (msg.method === 'fetch') {
-      chain = chain.then(() => fetch.apply(null, msg.args)).then(r => {
+      let [url, opts] = msg.args
+      if (opts && opts.headers) {
+        opts.headers = objectToHeader(opts.headers)
+      }
+      chain = chain.then(() => fetch(url, opts)).then(r => {
         this.response = r
         console.log('response', r)
         return {
@@ -100,7 +142,7 @@ class Fetch extends Service {
           statusText: r.statusText,
           type: r.type,
           url: r.url,
-          headers: convertHeader(r.headers)
+          headers: headerToObject(r.headers)
         }
       })
     } else if (msg.method === 'json') {
@@ -119,6 +161,7 @@ class Fetch extends Service {
         // console.log('read', r)
         if (r.done === false) {
           if (this.port.canTransfer) {
+            r.value = r.value.buffer
             transfer.push(r.value)
           } else {
             r.value = uint8ToBase64(r.value)
@@ -228,19 +271,34 @@ class Signer extends Service {
   }
 }
 Signer.init()
+
+const worker = new SharedWorker(chrome.runtime.getURL('dist/bridgeWorker.js'))
+worker.port.onmessage = ({data}) => {
+  console.log('Received message', data)
+  if (data.type === 'connect') {
+    const port = data.port
+    const iPort = new WorkerPort(port)
+    const f = new Fetch(iPort)
+    iPort.bindService(f)
+  }
+}
+worker.port.postMessage({
+  type: 'registerBackground'
+})
+worker.port.start()
 chrome.runtime.onConnect.addListener(port => {
   /**
    * @type {Service}
    */
   let service
+  const iPort = new ChromePort(port)
   if (port.name === 'fetch') {
     console.log('new fetch port', port)
-    service = new Fetch(port)
+    service = new Fetch(iPort)
   } else if (port.name === 'signer') {
     console.log('new signer port', port)
-    service = new Signer(port)
+    service = new Signer(iPort)
   }
-  const iPort = new ChromePort(port)
   iPort.bindService(service)
 })
 chrome.pageAction.onClicked.addListener(tab => {
