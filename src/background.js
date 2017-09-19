@@ -6,117 +6,18 @@ function uint8ToBase64 (buffer) {
   }
   return btoa(binary)
 }
-function objectToHeader (headers) {
-  let out = new Headers()
-  for (let key of Object.keys(headers)) {
-    out.set(key, headers[key])
-  }
-  return out
-}
-function headerToObject (headers) {
+function convertHeader (headers) {
   let out = {}
   for (let key of headers.keys()) {
     out[key] = headers.get(key)
   }
   return out
 }
-class IPort {
-  constructor () {
-    this.canTransfer = false
-  }
-  /**
-   * 
-   * @param {Service} service 
-   */
-  bindService (service) {
-    throw new Error('not impl')
-  }
-  /**
-   * 
-   * @param {*} data 
-   * @param {any[]} transfer 
-   */
-  postMessage (data, transfer = undefined) {
-    throw new Error('not impl')
-  }
-}
-class WorkerPort extends IPort {
-  /**
-   * @param {MessagePort} port 
-   */
+class Fetch {
   constructor (port) {
-    super()
-    this.port = port
-    this.canTransfer = true
-  }
-  /**
-   * @param {Service} service 
-   */
-  bindService (service) {
-    this.port.onmessage = ({data}) => service.onMessage(data)
-    this.port.onmessageerror = () => service.onDisconnect()
-    this.port.start()
-  }
-  /**
-   * 
-   * @param {*} data 
-   * @param {any[]} transfer 
-   */
-  postMessage (data, transfer = undefined) {
-    this.port.postMessage(data, transfer)
-  }
-}
-class ChromePort extends IPort {
-  /**
-   * 
-   * @param {chrome.runtime.Port} port
-   */
-  constructor (port) {
-    super()
-    this.port = port
-    this.canTransfer = false
-  }
-  /**
-   * 
-   * @param {Service} service 
-   */
-  bindService (service) {
-    this.port.onMessage.addListener((msg) => service.onMessage(msg))
-    this.port.onDisconnect.addListener(() => service.onDisconnect())
-  }
-  /**
-   * 
-   * @param {*} data 
-   * @param {any[]} transfer 
-   */
-  postMessage (data, transfer = undefined) {
-    this.port.postMessage(data)
-  }
-}
-class Service {
-  /**
-   * 
-   * @param {IPort} port 
-   */
-  constructor (port) {
-    this.port = port
-  }
-  onMessage (msg) {
-    throw new Error('not impl')
-  }
-  onDisconnect () {
-    throw new Error('not impl')
-  }
-}
-class Fetch extends Service {
-  /**
-   * 
-   * @param {IPort} port 
-   */
-  constructor (port) {
-    super(port)
     this.reader = null
     this.response = null
+    this.port = port
   }
   onDisconnect () {
     if (this.reader) {
@@ -126,13 +27,8 @@ class Fetch extends Service {
   onMessage (msg) {
     // console.log('fetch new msg', msg)
     let chain = Promise.resolve()
-    let transfer = []
     if (msg.method === 'fetch') {
-      let [url, opts] = msg.args
-      if (opts && opts.headers) {
-        opts.headers = objectToHeader(opts.headers)
-      }
-      chain = chain.then(() => fetch(url, opts)).then(r => {
+      chain = chain.then(() => fetch.apply(null, msg.args)).then(r => {
         this.response = r
         console.log('response', r)
         return {
@@ -142,7 +38,7 @@ class Fetch extends Service {
           statusText: r.statusText,
           type: r.type,
           url: r.url,
-          headers: headerToObject(r.headers)
+          headers: convertHeader(r.headers)
         }
       })
     } else if (msg.method === 'json') {
@@ -160,12 +56,7 @@ class Fetch extends Service {
       chain = chain.then(() => this.reader.read()).then(r => {
         // console.log('read', r)
         if (r.done === false) {
-          if (this.port.canTransfer) {
-            r.value = r.value.buffer
-            transfer.push(r.value)
-          } else {
-            r.value = uint8ToBase64(r.value)
-          }
+          r.value = uint8ToBase64(r.value)
         }
         return r
       })
@@ -181,7 +72,7 @@ class Fetch extends Service {
         args: args
       }
       // console.log('fetch send msg', outMsg)
-      this.port.postMessage(outMsg, transfer)
+      this.port.postMessage(outMsg)
     }).catch(e => {
       console.log(e)
       this.port.postMessage({
@@ -204,7 +95,7 @@ FlashEmu.setGlobalFlags({
   enableWarn: false,
   enableError: false
 })
-class Signer extends Service {
+class Signer {
   static init () {
     if (!Signer.emu) {
       const emu = new FlashEmu({
@@ -225,12 +116,8 @@ class Signer extends Service {
       })
     }
   }
-  /**
-   * 
-   * @param {IPort} port 
-   */
   constructor (port) {
-    super(port)
+    this.port = port
     Signer.init()
   }
   douyuSign (roomId, time, did) {
@@ -271,35 +158,17 @@ class Signer extends Service {
   }
 }
 Signer.init()
-
-const worker = new SharedWorker(chrome.runtime.getURL('dist/bridgeWorker.js'))
-worker.port.onmessage = ({data}) => {
-  console.log('Received message', data)
-  if (data.type === 'connect') {
-    const port = data.port
-    const iPort = new WorkerPort(port)
-    const f = new Fetch(iPort)
-    iPort.bindService(f)
-  }
-}
-worker.port.postMessage({
-  type: 'registerBackground'
-})
-worker.port.start()
 chrome.runtime.onConnect.addListener(port => {
-  /**
-   * @type {Service}
-   */
-  let service
-  const iPort = new ChromePort(port)
+  let handler
   if (port.name === 'fetch') {
     console.log('new fetch port', port)
-    service = new Fetch(iPort)
+    handler = new Fetch(port)
   } else if (port.name === 'signer') {
     console.log('new signer port', port)
-    service = new Signer(iPort)
+    handler = new Signer(port)
   }
-  iPort.bindService(service)
+  port.onDisconnect.addListener(() => handler.onDisconnect())
+  port.onMessage.addListener(msg => handler.onMessage(msg))
 })
 chrome.pageAction.onClicked.addListener(tab => {
   chrome.tabs.sendMessage(tab.id, {

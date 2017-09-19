@@ -56,9 +56,6 @@ function build (builds) {
     'src/flash/douyu.swf',
     'src/flash/flashemu.js',
     'src/background.js',
-    'src/sharedWorker/proxy.js',
-    'src/sharedWorker/proxy.html',
-    'src/sharedWorker/bridgeWorker.js',
     'node_modules/flv.js/dist/flv.min.js'
   ]
   return copy('src/img/*', 'dist/img')

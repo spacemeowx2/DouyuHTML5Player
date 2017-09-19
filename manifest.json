@@ -34,7 +34,8 @@
         "libs/md5.js",
         "libs/less.min.js",
         "src/img/*",
-        "dist/proxy.html",
+        "src/*",
+        "src/sharedWorker/sharedWorker.html",
         "dist/*",
         "*://*/*"
     ],
