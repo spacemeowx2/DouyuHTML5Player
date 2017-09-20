@@ -50,7 +50,7 @@ async function getSwfApi (rid: string) {
   const tt = Math.round(new Date().getTime() / 60 / 1000)
   const signContent = [rid, API_KEY, tt].join('')
   const sign = md5(signContent)
-  const res = await fetch(`http://www.douyutv.com/swf_api/room/${rid}?cdn=&nofan=yes&_t=${tt}&sign=${sign}`)
+  const res = await fetch(`https://www.douyu.com/swf_api/room/${rid}?cdn=&nofan=yes&_t=${tt}&sign=${sign}`)
   const obj = await res.json()
   return await obj.data
 }
