@@ -1,6 +1,6 @@
 # 斗鱼HTML5播放器
 
-0.6.0 暂时使用 swf 进行签名所以需要开启 Flash 插件才能使用. 将来可能可以不需要 Flash 进行签名, 直接使用 js 运行 swf 文件.
+0.7.0 开始已经使用 [FlashEmu](https://github.com/spacemeowx2/DouyuHTML5Player/blob/master/src/flash/flashemu.js) 进行签名, Flash 仅仅用于连接弹幕服务器.
 
 基于 [flv.js](https://github.com/Bilibili/flv.js) 的斗鱼HTML5播放器.
 
@@ -13,6 +13,8 @@
 **不要**使用 Chrome 直接加载本文件夹, 本扩展程序需要构建后才能使用.
 
 [Chrome 应用商店](https://chrome.google.com/webstore/detail/hbocinidadgpnbcamhjgfbgiebhpnmfj)
+
+[Firefox 附加组件](https://addons.mozilla.org/zh-CN/firefox/addon/douyuhtml5player/)
 
 [Greasy Fork](https://greasyfork.org/scripts/26901) (Firefox)
 
