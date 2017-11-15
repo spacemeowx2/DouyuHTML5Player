@@ -87,6 +87,9 @@
 }
 
 .danmu-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: 1px solid #e5e4e4;
@@ -106,6 +109,9 @@
   .danmu-video {
     width: 100%;
     height: calc(~"100% - 42px");
+    & > video {
+      position: inherit !important;
+    }
   }
 
   .danmu-ctrl {
