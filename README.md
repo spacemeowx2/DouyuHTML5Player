@@ -6,7 +6,7 @@
 
 使用了 flv.js 内核提供的直播流播放, 用 JavaScript 实现了斗鱼的弹幕协议, 并支持发送弹幕和送礼物.
 
-![screenshot](screenshot.jpg)
+![screenshot](https://user-images.githubusercontent.com/8019167/33715813-d3f38294-db8e-11e7-95c7-c029d69ebf7e.jpg)
 
 # 使用
 
