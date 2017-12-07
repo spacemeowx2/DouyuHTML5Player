@@ -1,6 +1,6 @@
 import 'flv.js'
 import {requestFullScreen, exitFullscreen, LocalStorage, Timer} from './utils'
-import {TypeState} from 'TypeState'
+import {TypeState} from 'typestate'
 const storage = new LocalStorage('h5plr')
 
 function findInParent (node: HTMLElement, toFind: HTMLElement) {
