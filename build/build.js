@@ -2,8 +2,9 @@
 // rollup --environment TARGET:content-script,NODE_ENV=production -c build/config.js
 const fs = require('fs')
 const path = require('path')
-const rollup = require('rollup')
+const webpack = require('webpack')
 const less = require('less')
+const config = require('./webpack.conf')
 // const uglify = require('uglify-js')
 const copy = (from, to) => {
   const c = require('copy')
@@ -35,21 +36,11 @@ if (!fs.existsSync('dist')) {
 }
 
 const version = process.env.VERSION || require('../package.json').version
-let builds = require('./config').getAllBuilds()
 
-build(builds)
+build()
 
-function build (builds) {
+function build () {
   let built = 0
-  const total = builds.length
-  const next = () => {
-    return buildEntry(builds[built]).then(() => {
-      built++
-      if (built < total) {
-        return next()
-      }
-    })
-  }
   const fileList = [
     'src/flash/builtin.abc',
     'src/flash/playerglobal.abc',
@@ -63,14 +54,20 @@ function build (builds) {
     .then(() => read('src/danmu.less'))
     .then(lessSrc => less.render(lessSrc))
     .then(css => write('dist/danmu.css', css.css))
-    .then(() => next())
+    .then(() => webpackBuild())
     .catch(logError)
 }
 
-function buildEntry (config) {
-  return rollup.rollup(config).then(bundle => {
-    const code = bundle.generate(config).code
-    return write(config.dest, code)
+function webpackBuild () {
+  return new Promise((res, rej) => {
+    webpack(config, (err, stats) => {
+      if (stats.hasErrors()) {
+        console.error(stats.compilation.errors)
+        rej(new Error('Build failed with errors'))
+        return
+      }
+      res()
+    })
   })
 }
 

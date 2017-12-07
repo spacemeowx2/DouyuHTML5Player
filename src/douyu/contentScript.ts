@@ -185,11 +185,7 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
     }))
   }
   let mGetURL: (file: string) => string
-  if (USERSCRIPT) {
-    mGetURL = file => 'https://imspace.nos-eastchina1.126.net/img/' + file
-  } else {
-    mGetURL = file => getURL('dist/img/' + file)
-  }
+  mGetURL = file => getURL('dist/img/' + file)
   const dialog = getDialog('捐赠', '你的支持是我最大的动力.', [{
     src: mGetURL('alipay.png'),
     desc: '支付宝'
