@@ -144,7 +144,7 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
       text: '高清',
       rate: '2'
     }, {
-      text: '普清', 
+      text: '普清',
       rate: '1'
     }]
     return rates.map(i => {

@@ -44,7 +44,6 @@ hookFunc(document, 'createElement', (old, args) => {
       }
       return old.apply(null, args)
     })
-    // console.log(++wwwtttfff, ret)
   }
   return ret
 })
@@ -62,9 +61,3 @@ onMessage('SENDANMU', data => {
 onMessage('ACJ', data => {
   ACJ(data.id, data.data)
 })
-// onMessage('SIGNAPI', async data => {
-//   if (Signer.state !== SignerState.Ready) {
-//     throw new Error('Signer is not ready')
-//   }
-//   return Signer.sign(data.rid, data.tt, data.did)
-// })
