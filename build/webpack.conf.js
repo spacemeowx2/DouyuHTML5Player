@@ -1,5 +1,6 @@
 'use strict'
 const webpack = require('webpack')
+const ReplacePlugin = require('webpack-plugin-replace')
 const path = require('path')
 const vueLoaderConfig = require('./vue-loader.conf')
 
@@ -48,11 +49,19 @@ module.exports = {
     ]
   },
   plugins: [
+    new ReplacePlugin({
+      exclude: [
+        /node_modules/
+      ],
+      values: {
+        'DEBUG': false,
+      }
+    }),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1, // disable creating additional chunks
     })
   ],
-  externals: [
-    'flv.js'
-  ]
+  externals: {
+    'flv.js': 'flvjs'
+  }
 }

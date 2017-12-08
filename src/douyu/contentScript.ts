@@ -99,7 +99,7 @@ class DouyuDanmuPlayer extends DanmuPlayer {
     this.ui = new DouyuPlayerUI(this, this.state)
   }
   onDanmuPkg (pkg: any) {
-    if (DEBUG) {
+    /**
       const example = {
         "type": "chatmsg",
         "rid": "510541",
@@ -115,6 +115,7 @@ class DouyuDanmuPlayer extends DanmuPlayer {
         "el": "eid@A=1500000005@Setp@A=1@Ssc@A=1@Sef@A=0@S/"
       }
     }
+    */
     const getColor = (c: number) => ['#ff0000', '#1e87f0', '#7ac84b', '#ff7f00', '#9b39f4', '#ff69b4'][c-1]
     if (pkg.txt.length > 0) {
       let cls = []

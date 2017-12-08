@@ -133,6 +133,9 @@ export class Timer {
     this.id = window.setTimeout(this.onTimer, this.delay)
   }
 }
+export function delay (time: number): Promise<void> {
+  return new Promise<void>(res => setTimeout(res, time))
+}
 export function getURL (src: string) {
   if (src.substr(0, 5) !== 'blob:') {
     src = chrome.runtime.getURL(src)
@@ -318,4 +321,18 @@ export class DelayNotify<T> {
   reset () {
     this.notified = false
   }
+}
+/**
+ * [from, to)
+ * @param from 
+ * @param to 
+ */
+export function randInt (from: number, to: number) {
+  const rand = Math.random()
+  let result = Math.floor(rand * (to - from) + from)
+  if (result === to) {
+    console.error(`wtf it happend! ${rand} ${from} ${to}`)
+    result = to - 1
+  }
+  return result
 }
