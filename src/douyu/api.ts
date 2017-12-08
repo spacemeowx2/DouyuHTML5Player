@@ -494,11 +494,6 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
   const args = await res.json()
   const servers = JSON.parse(decodeURIComponent(args.server_config))
   const mserver = servers[Math.floor(Math.random() * servers.length)]
-  const ports = [8601, 8602, 12601, 12602]
-  const danmuServer = {
-    ip: 'danmu.douyu.com',
-    port: ports[Math.floor(Math.random() * ports.length)]
-  }
 
   let miscClient = new DouyuClient(roomId)
   await miscClient.connectAsync(mserver.ip, mserver.port)
