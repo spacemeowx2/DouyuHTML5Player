@@ -328,11 +328,5 @@ export class DelayNotify<T> {
  * @param to 
  */
 export function randInt (from: number, to: number) {
-  const rand = Math.random()
-  let result = Math.floor(rand * (to - from) + from)
-  if (result === to) {
-    console.error(`wtf it happend! ${rand} ${from} ${to}`)
-    result = to - 1
-  }
-  return result
+  return Math.floor(Math.random() * (to - from) + from)
 }
