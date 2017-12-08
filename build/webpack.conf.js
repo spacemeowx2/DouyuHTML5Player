@@ -10,6 +10,7 @@ function resolve (dir) {
 
 module.exports = {
   entry: {
+    options: './src/options.js',
     douyuCS: './src/douyu/contentScript.ts',
     douyuInject: './src/douyu/inject.ts'
   },
@@ -44,7 +45,10 @@ module.exports = {
       },
       {
         test: /\.ts$/,
-        loader: 'ts-loader'
+        loader: 'ts-loader',
+        options: {
+          appendTsSuffixTo: [/\.vue$/]
+        }
       }
     ]
   },
@@ -62,6 +66,7 @@ module.exports = {
     })
   ],
   externals: {
-    'flv.js': 'flvjs'
+    'flv.js': 'flvjs',
+    'vue': 'Vue'
   }
 }

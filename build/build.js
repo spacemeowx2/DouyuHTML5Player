@@ -47,7 +47,9 @@ function build () {
     'src/flash/douyu.swf',
     'src/flash/flashemu.js',
     'src/background.js',
-    'node_modules/flv.js/dist/flv.min.js'
+    'src/options.html',
+    'node_modules/flv.js/dist/flv.min.js',
+    'node_modules/vue/dist/vue.runtime.js'
   ]
   return copy('src/img/*', 'dist/img')
     .then(() => copyEach(fileList, 'dist', {flatten: true}))
