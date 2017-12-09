@@ -313,6 +313,8 @@ class DouyuClient extends DouyuBaseClient {
   @Type('setmsggroup')
   setmsggroup (data: DouyuPackage) {
     console.log('joingroup', data)
+    this.danmuClient.rid = data.rid
+    this.danmuClient.gid = data.gid
     this.danmuClient.send({
       type: 'joingroup',
       rid: data.rid,
@@ -326,6 +328,8 @@ class DouyuClient extends DouyuBaseClient {
 }
 
 class DouyuDanmuClient extends DouyuBaseClient {
+  rid: string
+  gid: string
   constructor (roomId: string) {
     super(roomId)
     this.redirect = {
@@ -358,6 +362,13 @@ class DouyuDanmuClient extends DouyuBaseClient {
   loginres (data: DouyuPackage) {
     console.log('loginres dm', data)
     this.startKeepalive()
+    if (this.rid && this.gid) {
+      this.send({
+        type: 'joingroup',
+        rid: data.rid,
+        gid: data.gid
+      })
+    }
   }
   onDefault (data: DouyuPackage) {
     ACJ('room_data_handler', data)
