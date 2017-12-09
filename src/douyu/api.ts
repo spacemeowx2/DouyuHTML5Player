@@ -284,7 +284,7 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('chatmsg')
   chatmsg (data: DouyuPackage) {
-    onChatMsg(data)
+    // onChatMsg(data)
   }
   @Type('resog')
   resog (data: DouyuPackage) {
