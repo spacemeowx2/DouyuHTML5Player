@@ -1,6 +1,5 @@
 'use strict'
 const webpack = require('webpack')
-const ReplacePlugin = require('webpack-plugin-replace')
 const path = require('path')
 const vueLoaderConfig = require('./vue-loader.conf')
 
@@ -10,7 +9,7 @@ function resolve (dir) {
 
 module.exports = {
   entry: {
-    options: './src/options.js',
+    options: './src/options.ts',
     douyuCS: './src/douyu/contentScript.ts',
     douyuInject: './src/douyu/inject.ts'
   },
@@ -53,14 +52,6 @@ module.exports = {
     ]
   },
   plugins: [
-    new ReplacePlugin({
-      exclude: [
-        /node_modules/
-      ],
-      values: {
-        'DEBUG': false,
-      }
-    }),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1, // disable creating additional chunks
     })
