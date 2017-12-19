@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["dom", "es6"],
-    "module": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "removeComments": true,
@@ -14,10 +14,11 @@
     "importHelpers": true
   },
   "files": [
-    "src/douyu/inject.ts",
-    "src/douyu/contentScript.ts"
+    "src/options/options.ts"
   ],
   "include": [
+    "src/**/inject.ts",
+    "src/**/contentScript.ts",
     "typings/**/*.d.ts"
   ]
 }

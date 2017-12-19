@@ -45,7 +45,7 @@ function build (webpackConfig) {
     'src/flash/douyu.swf',
     'src/flash/flashemu.js',
     'src/background.js',
-    'src/options.html',
+    'src/options/options.html',
     'node_modules/flv.js/dist/flv.min.js',
     'node_modules/vue/dist/vue.runtime.js'
   ]
@@ -62,15 +62,8 @@ function webpackBuild (webpackConfig) {
   return new Promise((res, rej) => {
     webpack(webpackConfig, (err, stats) => {
       if (stats.hasErrors()) {
-        console.error(stats.compilation.errors)
         rej(new Error('Build failed with errors'))
         return
-      }
-      const assets = stats.compilation.assets
-      for (let key of Object.keys(assets)) {
-        const asset = assets[key]
-        const rpath = path.relative(rootPath, asset.existsAt)
-        console.log(`${rpath} ${getSize(asset.size())}`)
       }
       res()
     })

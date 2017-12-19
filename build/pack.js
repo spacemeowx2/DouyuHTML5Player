@@ -7,8 +7,8 @@ var pkg = require('../package')
 var manifest = fs.readFileSync('manifest.json', {
   encoding: 'utf-8'
 })
-manifest = manifest.replace(/("version"\s*:\s*)"(\d+\.\d+\.\d+)"/, function (_, v) {
-  return v + '"' + pkg.version + '"'
+manifest = manifest.replace(/("version"\s*:\s*)"(\d+\.\d+\.\d+(-\d+))"/, function (_, v) {
+  return v + '"' + pkg.version.replace('-', '.') + '"'
 })
 fs.writeFileSync('manifest.json', manifest)
 

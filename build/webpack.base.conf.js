@@ -9,7 +9,7 @@ function resolve (dir) {
 
 module.exports = {
   entry: {
-    options: './src/options.ts',
+    options: './src/options/options.ts',
     douyuCS: './src/douyu/contentScript.ts',
     douyuInject: './src/douyu/inject.ts'
   },
