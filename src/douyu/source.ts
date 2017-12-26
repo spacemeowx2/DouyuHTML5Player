@@ -69,6 +69,11 @@ export class DouyuSource extends BaseSource {
     this.roomId = roomId
     this.swfApi = null
   }
+  async init () {
+    if (!this.swfApi) {
+      this.swfApi = await getSwfApi(this.roomId)
+    }
+  }
   set cdn (val) {
     this._cdn = val
     this.getUrl()

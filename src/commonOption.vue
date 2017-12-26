@@ -1,17 +1,15 @@
 <template lang="pug">
-  .douyu-option
-    input(v-model='preferRate')
-    p 123 {{preferRate}}
+  .common-option
+    input(v-model='test')
+    p 123 {{test}}
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import { getDefaultConfig } from './defaultConfig'
-
 export default Vue.extend({
-  name: 'douyu',
-  data () {
-    return getDefaultConfig()
-  }
+  name: 'common',
+  data: () => ({
+    test: '321'
+  })
 })
 </script>
 <style lang="less" scoped>
