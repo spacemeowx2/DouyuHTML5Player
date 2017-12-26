@@ -1,5 +1,5 @@
-import 'flv.js'
-import {requestFullScreen, exitFullscreen, LocalStorage, Timer} from './utils'
+import flvjs, * as FlvJs from 'flv.js'
+import {requestFullScreen, exitFullscreen, LocalStorage, Timer, CountByTime} from './utils'
 import {TypeState} from 'typestate'
 const storage = new LocalStorage('h5plr')
 
@@ -447,11 +447,23 @@ export class DanmuPlayer implements PlayerUIEventListener {
   ui: PlayerUI
   state: PlayerStateFSM
   mgr: DanmuManager
+
   private _src: string = ''
   private _moveId: number
   private lastVolume: number
   private bufferMonitor: PlayerBufferMonitor
+  private onLogBind: (type: string, str: string) => void
+  private magicCounter = new CountByTime(5 * 1000)
 
+  private onLog (type: string, str: string) {
+    if (this.player && str.includes('Large audio timestamp gap detected, may cause AV sync to drift.')) {
+      this.magicCounter.add()
+      if (this.magicCounter.count() > 5 * 5) {
+        this.magicFlvJSDisableFillAudioGap()
+        console.warn('Too much fill, disable it.')
+      }
+    }
+  }
   onVolumeChange (vol: number) {
     this.player.volume = vol
   }
@@ -531,6 +543,9 @@ export class DanmuPlayer implements PlayerUIEventListener {
     return this._src
   }
   constructor (listener: DanmuPlayerListener, ui?: PlayerUI) {
+    this.onLogBind = (type, str) => this.onLog(type, str)
+    flvjs.LoggingControl.addLogListener(this.onLogBind)
+
     this.bufferMonitor = new PlayerBufferMonitor(this)
     this.state = new PlayerStateFSM()
 
@@ -579,6 +594,14 @@ export class DanmuPlayer implements PlayerUIEventListener {
   }
   fireDanmu (text: string, color: string, cls: (string | string[])) {
     return this.mgr.fireDanmu(text, color, cls)
+  }
+  private magicFlvJSDisableFillAudioGap () {
+    try {
+      const player = this.player as any
+      if (player) {
+        player._transmuxer._controller._remuxer._fillAudioTimestampGap = false
+      }
+    } catch (e) {}
   }
 }
 

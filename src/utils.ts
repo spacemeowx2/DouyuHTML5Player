@@ -319,3 +319,27 @@ export class DelayNotify<T> {
     this.notified = false
   }
 }
+export class CountByTime {
+  private list: number[] = []
+  /**
+   * 
+   * @param remember in ms
+   */
+  constructor (private remember: number) {
+  }
+  add () {
+    const now = this.time()
+    this.list.push(now)
+    this.list = this.list.filter(i => now - i < this.remember)
+  }
+  count (before: number = this.remember) {
+    if (before > this.remember) {
+      throw new Error('before should < remember')
+    }
+    const now = this.time()
+    return this.list.filter(i => now - i < before).length
+  }
+  private time () {
+    return +new Date()
+  }
+}
