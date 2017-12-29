@@ -1,4 +1,4 @@
-import 'flv.js'
+import flvjs, * as FlvJs from 'flv.js'
 import {requestFullScreen, exitFullscreen, LocalStorage, Timer} from './utils'
 import {TypeState} from 'typestate'
 const storage = new LocalStorage('h5plr')
