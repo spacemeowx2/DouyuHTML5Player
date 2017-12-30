@@ -275,6 +275,7 @@ class DouyuClient extends DouyuBaseClient {
       frank: 'room_data_handler',
       online_noble_list: 'room_data_handler',
     }
+    ACJ('room_bus_login', '')
   }
   reqOnlineGift (loginres: DouyuPackage) {
     return {
