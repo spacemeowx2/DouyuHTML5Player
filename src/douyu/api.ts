@@ -214,7 +214,7 @@ class DouyuBaseClient implements DouyuListener {
   }
   loginreq () {
     const rt = Math.round(new Date().getTime() / 1000)
-    const devid = getACF('devid') // md5(Math.random()).toUpperCase()
+    const devid = getACF('did') // md5(Math.random()).toUpperCase()
     const username = getACF('username')
     console.log('username', username, devid)
     return {
@@ -231,7 +231,7 @@ class DouyuBaseClient implements DouyuListener {
       biz: getACF('biz'),
       stk: getACF('stk'),
       ltkid: getACF('ltkid')
-    }
+    } 
   }
   startKeepalive () {
     this.send(this.keepalivePkg())
