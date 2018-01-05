@@ -469,12 +469,20 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {
+      // type@=chatmessage/receiver@=0/content@=${内容}/scope@=/col@=0/pid@=/p2p@=0/nc@=0/rev@=0/hg@=0/ifs@=0/sid@=/lid@=0/
       miscClient.send({
+        nc: '0',
+        rev: '0',
+        hg: '0',
+        ifs: '0',
+        lid: '0',
         col: '0',
+        p2p: '0',
+        receiver: '0',
         content: content,
-        dy: '',
+        sid: '',
         pid: '',
-        sender: miscClient.uid,
+        scope: '',
         type: 'chatmessage'
       })
     },
