@@ -220,7 +220,7 @@ abstract class DouyuBaseClient implements DouyuListener {
   }
   loginreq () {
     const rt = Math.round(new Date().getTime() / 1000)
-    const devid = getACF('devid') // md5(Math.random()).toUpperCase()
+    const devid = getACF('did') // md5(Math.random()).toUpperCase()
     const username = getACF('username')
     console.log('username', username, devid)
     return {
@@ -237,7 +237,7 @@ abstract class DouyuBaseClient implements DouyuListener {
       biz: getACF('biz'),
       stk: getACF('stk'),
       ltkid: getACF('ltkid')
-    }
+    } 
   }
   startKeepalive () {
     this.send(this.keepalivePkg())
@@ -289,6 +289,7 @@ class DouyuClient extends DouyuBaseClient {
       frank: 'room_data_handler',
       online_noble_list: 'room_data_handler',
     }
+    ACJ('room_bus_login', '')
   }
   reqOnlineGift (loginres: DouyuPackage) {
     return {
@@ -298,7 +299,7 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('chatmsg')
   chatmsg (data: DouyuPackage) {
-    onChatMsg(data)
+    // onChatMsg(data)
   }
   @Type('resog')
   resog (data: DouyuPackage) {
@@ -499,12 +500,20 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {
+      // type@=chatmessage/receiver@=0/content@=${内容}/scope@=/col@=0/pid@=/p2p@=0/nc@=0/rev@=0/hg@=0/ifs@=0/sid@=/lid@=0/
       miscClient.send({
+        nc: '0',
+        rev: '0',
+        hg: '0',
+        ifs: '0',
+        lid: '0',
         col: '0',
+        p2p: '0',
+        receiver: '0',
         content: content,
-        dy: '',
+        sid: '',
         pid: '',
-        sender: miscClient.uid,
+        scope: '',
         type: 'chatmessage'
       })
     },
