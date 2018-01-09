@@ -10,7 +10,7 @@ declare function escape(s:string): string;
 
 export const getACF = (key: string) => {
   try {
-    return new RegExp(`acf_${key}=(.*?);`).exec(document.cookie)[1]
+    return new RegExp(`acf_${key}=(.*?)(;|$)`).exec(document.cookie)[1]
   } catch (e) {
     return ''
   }
@@ -233,7 +233,7 @@ abstract class DouyuBaseClient implements DouyuListener {
       rt: rt,
       vk: md5(`${rt}r5*^5;}2#\${XF[h+;'./.Q'1;,-]f'p[${devid}`),
       ver: '20150929',
-      aver: '2017012111',
+      aver: '2018010801',
       biz: getACF('biz'),
       stk: getACF('stk'),
       ltkid: getACF('ltkid')
