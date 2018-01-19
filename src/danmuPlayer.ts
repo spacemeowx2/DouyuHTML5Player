@@ -196,6 +196,13 @@ export class PlayerUI {
         if (this.sizeState.is(SizeState.FullScreen)) {
           this.sizeState.go(SizeState.ExitFullScreen)
         }
+      } else if (event.keyCode == 38 || event.keyCode == 40) { //up down arrow
+        if(this.sizeState.is(SizeState.Normal)) return
+        let input = document.getElementById('danmu-volume-ctrl')
+        input.value  = parseInt(input.value) + (event.keyCode == 38 ? 10 : -10)
+        let fireEvent = document.createEvent('HTMLEvents')
+        fireEvent.initEvent("input", true, true);
+        input.dispatchEvent(fireEvent)
       }
     })
 
@@ -372,6 +379,7 @@ export class PlayerUI {
     volume.className = 'danmu-volume'
     progress.className = 'progress'
     input.type = 'range'
+    input.id = 'danmu-volume-ctrl'
     volume.appendChild(input)
     volume.appendChild(progress)
 
