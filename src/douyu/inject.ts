@@ -52,7 +52,6 @@ let api: DouyuAPI
 onMessage('BEGINAPI', async data => {
   await retry(() => JSocket.init(), 3)
   api = await douyuApi(data.roomId)
-  api.hookExe()
   window.api = api
 })
 onMessage('SENDANMU', data => {

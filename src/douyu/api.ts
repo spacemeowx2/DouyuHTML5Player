@@ -1,4 +1,4 @@
-import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay} from '../utils'
+import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay, DelayNotify} from '../utils'
 import {JSocket, Handlers} from '../JSocket'
 import md5 from '../md5'
 
@@ -313,7 +313,6 @@ class DouyuClient extends DouyuBaseClient {
       frank: 'room_data_handler',
       online_noble_list: 'room_data_handler',
     }
-    ACJ('room_bus_login', '')
   }
   reqOnlineGift (loginres: DouyuPackage) {
     return {
@@ -323,7 +322,10 @@ class DouyuClient extends DouyuBaseClient {
   }
   @Type('chatmsg')
   chatmsg (data: DouyuPackage) {
-    // onChatMsg(data)
+    if (this.rg > 1 || this.pg > 1) {
+      return
+    }
+    onChatMsg(data)
   }
   @Type('resog')
   resog (data: DouyuPackage) {
@@ -439,7 +441,7 @@ class DouyuDanmuClient extends DouyuBaseClient {
   }
 }
 
-function hookDouyu (roomId: string, miscClient: DouyuClient) {
+function hookDouyu (roomId: string, miscClient: DouyuClient, loginNotify: DelayNotify<void>) {
   let oldExe: Function
   const repeatPacket = (text: string) => douyuDecode(text)
   const jsMap: any = {
@@ -483,6 +485,10 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
   const api: any = window['require']('douyu/page/room/base/api')
   const hookd = function hookd (...args: any[]) {
     let req = jsMap[args[0]]
+    if (args[0] == 'js_userlogin') {
+      console.log('user login')
+      loginNotify.notify(undefined)
+    }
     if (req) {
       if (typeof req == 'function') {
         req = req.apply(null, args.slice(1))
@@ -512,15 +518,18 @@ function hookDouyu (roomId: string, miscClient: DouyuClient) {
 export interface DouyuAPI {
   sendDanmu (content: string): void
   serverSend (pkg: DouyuPackage): void
-  hookExe (): void
 }
 export async function douyuApi (roomId: string): Promise<DouyuAPI> {
+  ACJ('room_bus_login', '')
   const res = await fetch('/swf_api/getProxyServer')
   const args = await res.json()
   const servers = args.servers
   const mserver = servers[Math.floor(Math.random() * servers.length)]
 
   let miscClient = new DouyuClient(roomId)
+  const df = new DelayNotify<void>(undefined)
+  hookDouyu(roomId, miscClient, df)
+  await df.wait(2000)
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {
@@ -543,9 +552,6 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
     },
     serverSend (pkg: DouyuPackage) {
       return miscClient.send(pkg)
-    },
-    hookExe () {
-      hookDouyu(roomId, miscClient)
     }
   }
 }
