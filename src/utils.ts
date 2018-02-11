@@ -284,10 +284,10 @@ export function setBgListener (listener: typeof defaultBgListener) {
   bgListener = listener
 }
 export class DelayNotify<T> {
-  notified = false
-  value: T
-  tmid: number = null
-  res: (value: T) => void = null
+  private notified = false
+  private value: T
+  private tmid: number = null
+  private res: (value: T) => void = null
   constructor (private defaultValue: T) {
   }
   notify (value: T) {
