@@ -1,4 +1,4 @@
-import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8} from '../utils'
+import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay} from '../utils'
 import {JSocket, Handlers} from '../JSocket'
 import md5 from '../md5'
 
@@ -63,20 +63,38 @@ export function ACJ (id: string, data: any | string) {
 }
 
 interface DouyuListener {
+  onReconnect (): void
   onPackage (pkg: DouyuPackage, pkgStr: string): void
   onClose (): void
   onError (e: string): void
 }
-class DouyuProtocol extends JSocket implements Handlers {
+
+class DouyuProtocol {
   buffer: string
   connectHandler: () => void = () => null
+  ws: WebSocket
   constructor (public listener: DouyuListener) {
-    super()
-    this.init(this, {})
     this.buffer = ''
   }
-  connectAsync (host: string, port: number) {
-    super.connect(host, port)
+  connectAsync (url: string) {
+    return new Promise<void>((res, rej) => {
+      const ws = new WebSocket(url)
+      ws.binaryType = 'arraybuffer'
+      ws.onopen = () => {
+        this.ws = ws
+        ws.onmessage = e => {
+          const buf: ArrayBuffer = e.data
+          const u8 = new Uint8Array(buf)
+          let str = String.fromCharCode(...u8)
+          this.dataHandler(str)
+        }
+        ws.onclose = () => this.closeHandler()
+        ws.onerror = (e) => this.errorHandler('Connection error(ws)')
+        res()
+      }
+      ws.onerror = () => rej()
+    })
+    
     return new Promise<void>((res, rej) => {
       const prevConnHandler = this.connectHandler
       const prevErrHandler = this.errorHandler
@@ -104,7 +122,7 @@ class DouyuProtocol extends JSocket implements Handlers {
         try {
           pkgStr = ascii_to_utf8(buffer.substr(12, size-8))
         } catch (e) {
-          console.log('deocde fail', escape(buffer.substr(12, size-8)))
+          console.log('decode fail', escape(buffer.substr(12, size-8)))
         }
         this.buffer = buffer = buffer.substr(size+4)
         if (pkgStr.length === 0) continue
@@ -131,7 +149,12 @@ class DouyuProtocol extends JSocket implements Handlers {
     let msg = douyuEncode(data) + '\0'
     msg = utf8_to_ascii(msg)
     msg = p32(msg.length+8) + p32(msg.length+8) + p32(689) + msg
-    this.writeFlush(msg)
+    let buf = new ArrayBuffer(msg.length)
+    let u8 = new Uint8Array(buf)
+    for (let i = 0; i < msg.length; i++) {
+      u8[i] = msg.charCodeAt(i)
+    }
+    this.ws.send(buf)
   }
 }
 function Type (type: string) {
@@ -146,11 +169,13 @@ function Type (type: string) {
   }
 }
 
-class DouyuBaseClient implements DouyuListener {
+abstract class DouyuBaseClient implements DouyuListener {
   private prot: DouyuProtocol
   private lastIP: string = null
-  private lastPort: number = null
+  private lastPort: string = null
   private keepaliveId: number = null
+  private reconnectDelay: number = 1000
+  private queue = Promise.resolve()
   redirect: {
     [key: string]: string
   } = {}
@@ -171,13 +196,17 @@ class DouyuBaseClient implements DouyuListener {
     this.prot = new DouyuProtocol(this)
     try {
       await this.connectAsync(this.lastIP, this.lastPort)
+      this.onReconnect()
     } catch (e) {
       // 连接失败
       this.onError()
     }
   }
   onClose () {
-    setTimeout(() => this.reconnect(), 1000)
+    setTimeout(() => this.reconnect(), this.reconnectDelay)
+    if (this.reconnectDelay < 16000) {
+      this.reconnectDelay *= 2
+    }
   }
   onError () {
     this.onClose()
@@ -189,21 +218,21 @@ class DouyuBaseClient implements DouyuListener {
       return
     }
     if (this.map[type]) {
-      this.map[type].call(this, pkg, pkgStr)
+      this.queue = this.queue.then(() => this.map[type].call(this, pkg, pkgStr))
       return
     }
     this.onDefault(pkg)
   }
-  onDefault (pkg: DouyuPackage) {
-
-  }
+  abstract onDefault (pkg: DouyuPackage): void
+  abstract onReconnect (): void
   send (pkg: DouyuPackage) {
     this.prot.send(pkg)
   }
-  async connectAsync (ip: string, port: number) {
+  async connectAsync (ip: string, port: string) {
     this.lastIP = ip
     this.lastPort = port
-    await this.prot.connectAsync(ip, port)
+    const url = `wss://${ip}:${port}/`
+    await this.prot.connectAsync(url)
     this.send(this.loginreq())
   }
   keepalivePkg (): DouyuPackage {
@@ -225,9 +254,10 @@ class DouyuBaseClient implements DouyuListener {
       roomid: this.roomId,
       devid: devid,
       rt: rt,
+      pt: 2,
       vk: md5(`${rt}r5*^5;}2#\${XF[h+;'./.Q'1;,-]f'p[${devid}`),
       ver: '20150929',
-      aver: '2018010801',
+      aver: 'H5_2018021001beta',
       biz: getACF('biz'),
       stk: getACF('stk'),
       ltkid: getACF('ltkid')
@@ -263,7 +293,15 @@ function onChatMsg (data: DouyuPackage) {
 }
 class DouyuClient extends DouyuBaseClient {
   uid: string
-  constructor (roomId: string, public danmuClient: DouyuDanmuClient) {
+  rg: number
+  pg: number
+  danmuClient: DouyuDanmuClient
+  serverList: {
+    ip: string,
+    port: string,
+    nr: string
+  }[]
+  constructor (roomId: string) {
     super(roomId)
     this.redirect = {
       qtlr: 'room_data_tasklis',
@@ -299,12 +337,27 @@ class DouyuClient extends DouyuBaseClient {
   loginres (data: DouyuPackage) {
     console.log('loginres ms', data)
     this.uid = data.userid
+    this.rg = data.roomgroup
+    this.pg = data.pg
     this.send(this.reqOnlineGift(data))
     this.startKeepalive()
     ACJ('room_data_login', data)
     ACJ('room_data_getdid', {
       devid: getACF('devid')
     })
+  }
+  @Type('msgrepeaterproxylist')
+  async msgrepeaterproxylist (data: DouyuPackage) {
+    this.serverList = douyuDecodeList(data.list) as any
+    if (this.danmuClient !== undefined) {
+      console.warn('skip connect dm')
+      return
+    }
+    const list = this.serverList
+    const serverAddr = list[randInt(0, list.length)]
+    this.danmuClient = new DouyuDanmuClient(this.roomId)
+    window.dm = this.danmuClient
+    await this.danmuClient.connectAsync(serverAddr.ip, serverAddr.port)
   }
   @Type('keeplive')
   keeplive (data: DouyuPackage, rawString: string) {
@@ -314,23 +367,21 @@ class DouyuClient extends DouyuBaseClient {
   @Type('setmsggroup')
   setmsggroup (data: DouyuPackage) {
     console.log('joingroup', data)
-    this.danmuClient.rid = data.rid
-    this.danmuClient.gid = data.gid
-    this.danmuClient.send({
-      type: 'joingroup',
-      rid: data.rid,
-      gid: data.gid
-    })
+    this.danmuClient.joingroup(data.rid, data.gid)
   }
   onDefault (data: DouyuPackage) {
     ACJ('room_data_handler', data)
-    console.log('ms', data)
+    console.log('ms', data.type, data)
+  }
+  onReconnect () {
+
   }
 }
 
 class DouyuDanmuClient extends DouyuBaseClient {
-  rid: string
   gid: string
+  rid: string
+  hasReconnect: boolean = false
   constructor (roomId: string) {
     super(roomId)
     this.redirect = {
@@ -355,6 +406,15 @@ class DouyuDanmuClient extends DouyuBaseClient {
       online_noble_list: 'room_data_handler',
     }
   }
+  joingroup (rid: string, gid: string) {
+    this.rid = rid
+    this.gid = gid
+    this.send({
+      type: 'joingroup',
+      rid: rid,
+      gid: gid
+    })
+  }
   @Type('chatmsg')
   chatmsg (pkg: DouyuPackage) {
     onChatMsg(pkg)
@@ -363,17 +423,19 @@ class DouyuDanmuClient extends DouyuBaseClient {
   loginres (data: DouyuPackage) {
     console.log('loginres dm', data)
     this.startKeepalive()
-    if (this.rid && this.gid) {
-      this.send({
-        type: 'joingroup',
-        rid: data.rid,
-        gid: data.gid
-      })
+    if (this.hasReconnect) {
+      this.hasReconnect = false
+      if (this.rid && this.gid) {
+        this.joingroup(this.rid, this.gid)
+      }
     }
   }
   onDefault (data: DouyuPackage) {
     ACJ('room_data_handler', data)
-    console.log('dm', data)
+    console.log('dm', data.type, data)
+  }
+  onReconnect () {
+    this.hasReconnect = true
   }
 }
 
@@ -453,19 +515,12 @@ export interface DouyuAPI {
   hookExe (): void
 }
 export async function douyuApi (roomId: string): Promise<DouyuAPI> {
-  const res = await fetch('/swf_api/get_room_args')
+  const res = await fetch('/swf_api/getProxyServer')
   const args = await res.json()
-  const servers = JSON.parse(decodeURIComponent(args.server_config))
+  const servers = args.servers
   const mserver = servers[Math.floor(Math.random() * servers.length)]
-  const ports = [8601, 8602, 12601, 12602]
-  const danmuServer = {
-    ip: 'danmu.douyu.com',
-    port: ports[Math.floor(Math.random() * ports.length)]
-  }
 
-  let danmuClient = new DouyuDanmuClient(roomId)
-  let miscClient = new DouyuClient(roomId, danmuClient)
-  await danmuClient.connectAsync(danmuServer.ip, danmuServer.port)
+  let miscClient = new DouyuClient(roomId)
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {

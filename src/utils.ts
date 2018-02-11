@@ -343,3 +343,14 @@ export class CountByTime {
     return +new Date()
   }
 }
+/**
+ * [from, to)
+ * @param from 
+ * @param to 
+ */
+export function randInt (from: number, to: number) {
+  return Math.floor(Math.random() * (to - from) + from)
+}
+export function delay (time: number): Promise<void> {
+  return new Promise<void>(res => setTimeout(res, time))
+}
