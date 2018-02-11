@@ -78,6 +78,7 @@ export class PlayerUI {
   private _lastY: number = -1
   private muteEl: HTMLElement
   private sizeState: SizeStateFSM
+  private volumeInput: HTMLInputElement
 
   constructor (
       private listener: PlayerUIEventListener,
@@ -198,8 +199,8 @@ export class PlayerUI {
         }
       } else if (event.keyCode == 38 || event.keyCode == 40) { //up down arrow
         if(this.sizeState.is(SizeState.Normal)) return
-        let input = document.getElementById('danmu-volume-ctrl')
-        input.value  = parseInt(input.value) + (event.keyCode == 38 ? 10 : -10)
+        let input = this.volumeInput
+        input.value  = (parseInt(input.value) + (event.keyCode == 38 ? 10 : -10)).toString()
         let fireEvent = document.createEvent('HTMLEvents')
         fireEvent.initEvent("input", true, true);
         input.dispatchEvent(fireEvent)
@@ -379,18 +380,18 @@ export class PlayerUI {
     volume.className = 'danmu-volume'
     progress.className = 'progress'
     input.type = 'range'
-    input.id = 'danmu-volume-ctrl'
     volume.appendChild(input)
     volume.appendChild(progress)
 
     input.value = storage.getItem('volume') || '100'
-    cb( parseInt(input.value) / 100)
+    cb(parseInt(input.value) / 100)
     input.addEventListener('input', event => {
       progress.style.width = `${input.value}%`
-      cb( parseInt(input.value) / 100)
+      cb(parseInt(input.value) / 100)
       storage.setItem('volume', input.value)
     })
     progress.style.width = `${input.value}%`
+    this.volumeInput = input
     return volume
   }
   setTip (tip: string) {
