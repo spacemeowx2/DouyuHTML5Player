@@ -1,6 +1,16 @@
-import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay, DelayNotify} from '../utils'
+import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay, DelayNotify, LocalStorage} from '../utils'
 import {JSocket, Handlers} from '../JSocket'
 import md5 from '../md5'
+const storage = new LocalStorage('h5plr')
+const PUREMODE = 'pureMode'
+
+export function isPureMode () {
+  return storage.getItem(PUREMODE, '0') === '1'
+}
+
+export function setPureMode (val: boolean) {
+  storage.setItem(PUREMODE, val ? '1' : '0')
+}
 
 declare var window: {
   _ACJ_ (args: any[]): void,

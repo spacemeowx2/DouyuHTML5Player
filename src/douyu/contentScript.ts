@@ -1,9 +1,9 @@
 import '../hookfetch'
-import 'flv.js'
+import flvjs from 'flv.js'
 import { DanmuPlayer, PlayerUI, PlayerUIEventListener, PlayerState, SizeState } from '../danmuPlayer'
 import { bindMenu } from '../playerMenu'
 import { DouyuSource, ISignerResult } from './source'
-import { getACF } from './api'
+import { getACF, setPureMode, isPureMode } from './api'
 import { getURL, addScript, addCss, createBlobURL, onMessage, postMessage, sendMessage, getSetting, setSetting, setBgListener, DelayNotify } from '../utils'
 import { TypeState } from 'TypeState'
 import { Signer, SignerState } from './signer'
@@ -52,6 +52,11 @@ class DouyuPlayerUI extends PlayerUI {
     super._exitFullScreen()
   }
   protected _enterFullPage () {
+    if (isPureMode()) {
+      this.wrap.style.position = ''
+      this.wrap.style.zIndex = ''
+      return super._enterFullPage()
+    }
     this.wrap.setAttribute('fullpage', '')
     this.el.style.border = '0'
     
@@ -63,6 +68,11 @@ class DouyuPlayerUI extends PlayerUI {
     }
   }
   protected _exitFullPage () {
+    if (isPureMode()) {
+      this.wrap.style.position = 'inherit'
+      this.wrap.style.zIndex = 'inherit'
+      return super._exitFullPage()
+    }
     this.wrap.removeAttribute('fullpage')
     this.el.style.border = ''
 
@@ -184,6 +194,13 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
       }
     }))
   }
+  const disableDanmu = () => [{
+    text: `纯净模式${isPureMode() ? ' √' : ''}`,
+    cb () {
+      setPureMode(!isPureMode())
+      location.reload()
+    }
+  }]
   let mGetURL: (file: string) => string
   if (USERSCRIPT) {
     mGetURL = file => 'https://imspace.nos-eastchina1.126.net/img/' + file
@@ -207,7 +224,7 @@ const makeMenu = (player: DouyuDanmuPlayer, source: DouyuSource) => {
     }]
   }
   const dash = {}
-  bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu(), dash, donate()))
+  bindMenu(player.ui.video, () => [].concat(cdnMenu(), dash, rateMenu(), dash, transparentMenu(), dash, disableDanmu(), dash, donate()))
 }
 
 const loadVideo = (roomId: string, replace: (el: Element) => void) => {
@@ -277,9 +294,11 @@ onMessage('VIDEOID', async data => {
     console.warn(e)
   }
   let ctr = document.querySelector(`#${data.id}`)
-  await postMessage('BEGINAPI', {
-    roomId
-  })
+  if (!isPureMode()) {
+    await postMessage('BEGINAPI', {
+      roomId
+    })
+  }
   danmuPlayer = await loadVideo(roomId, el => {
     ctr.parentNode.replaceChild(el, ctr)
   })

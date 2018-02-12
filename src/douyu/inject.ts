@@ -50,7 +50,7 @@ hookFunc(document, 'createElement', (old, args) => {
 
 let api: DouyuAPI
 onMessage('BEGINAPI', async data => {
-  await retry(() => JSocket.init(), 3)
+  // await retry(() => JSocket.init(), 3)
   api = await douyuApi(data.roomId)
   window.api = api
 })
