@@ -71,6 +71,12 @@ export function ACJ (id: string, data: any | string) {
     console.error(id, data, e)
   }
 }
+function abConcat(buffer1: ArrayBuffer, buffer2: ArrayBuffer) {
+  let tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength)
+  tmp.set(new Uint8Array(buffer1), 0)
+  tmp.set(new Uint8Array(buffer2), buffer1.byteLength)
+  return tmp.buffer
+};
 
 interface DouyuListener {
   onReconnect (): void
@@ -80,11 +86,13 @@ interface DouyuListener {
 }
 
 class DouyuProtocol {
-  buffer: string
+  buffer: ArrayBuffer
   connectHandler: () => void = () => null
   ws: WebSocket
+  decoder = new TextDecoder('utf-8')
+  encoder = new TextEncoder('utf-8')
   constructor (public listener: DouyuListener) {
-    this.buffer = ''
+    this.buffer = new ArrayBuffer(0)
   }
   connectAsync (url: string) {
     return new Promise<void>((res, rej) => {
@@ -94,9 +102,7 @@ class DouyuProtocol {
         this.ws = ws
         ws.onmessage = e => {
           const buf: ArrayBuffer = e.data
-          const u8 = new Uint8Array(buf)
-          let str = String.fromCharCode(...u8)
-          this.dataHandler(str)
+          this.dataHandler(buf)
         }
         ws.onclose = () => this.closeHandler()
         ws.onerror = (e) => this.errorHandler('Connection error(ws)')
@@ -104,37 +110,23 @@ class DouyuProtocol {
       }
       ws.onerror = () => rej()
     })
-    
-    return new Promise<void>((res, rej) => {
-      const prevConnHandler = this.connectHandler
-      const prevErrHandler = this.errorHandler
-      const recover = () => {
-        this.connectHandler = prevConnHandler
-        this.errorHandler = prevErrHandler
-      }
-      this.connectHandler = () => {
-        recover()
-        res()
-      }
-      this.errorHandler = () => {
-        recover()
-        rej()
-      }
-    })
   }
-  dataHandler (data: string) {
-    this.buffer += data
-    let buffer = this.buffer
-    while (buffer.length >= 4) {
-      let size = u32(buffer.substr(0, 4))
-      if (buffer.length >= size) {
+  dataHandler (data: ArrayBuffer) {
+    this.buffer = abConcat(this.buffer, data)
+    while (this.buffer.byteLength >= 4) {
+      const buffer = this.buffer
+      const view = new DataView(buffer)
+      let size = view.getUint32(0, true)
+      if (buffer.byteLength - 4 >= size) {
+        const u8 = new Uint8Array(buffer)
         let pkgStr = ''
         try {
-          pkgStr = ascii_to_utf8(buffer.substr(12, size-8))
+          pkgStr = this.decoder.decode(u8.slice(12, 4 + size - 1))
+          // pkgStr = ascii_to_utf8(buffer.substr(12, size-8))
         } catch (e) {
-          console.log('decode fail', escape(buffer.substr(12, size-8)))
+          console.log('decode fail', u8)
         }
-        this.buffer = buffer = buffer.substr(size+4)
+        this.buffer = u8.slice(size + 4).buffer
         if (pkgStr.length === 0) continue
         try {
           let pkg = douyuDecode(pkgStr)
@@ -156,14 +148,18 @@ class DouyuProtocol {
     this.listener && this.listener.onError(err)
   }
   send (data: DouyuPackage) {
-    let msg = douyuEncode(data) + '\0'
-    msg = utf8_to_ascii(msg)
-    msg = p32(msg.length+8) + p32(msg.length+8) + p32(689) + msg
-    let buf = new ArrayBuffer(msg.length)
-    let u8 = new Uint8Array(buf)
-    for (let i = 0; i < msg.length; i++) {
-      u8[i] = msg.charCodeAt(i)
-    }
+    let msg = douyuEncode(data)
+    let msgu8 = this.encoder.encode(msg)
+    msgu8 = new Uint8Array(abConcat(msgu8.buffer, new ArrayBuffer(1)))
+
+    let buf = new ArrayBuffer(msgu8.length + 12)
+    const headerView = new DataView(buf)
+    const hLen = msgu8.length + 8
+    headerView.setUint32(0, hLen, true)
+    headerView.setUint32(4, hLen, true)
+    headerView.setUint32(8, 689, true)
+
+    new Uint8Array(buf).set(msgu8, 12)
     this.ws.send(buf)
   }
 }
@@ -539,7 +535,7 @@ export async function douyuApi (roomId: string): Promise<DouyuAPI> {
   let miscClient = new DouyuClient(roomId)
   const df = new DelayNotify<void>(undefined)
   hookDouyu(roomId, miscClient, df)
-  await df.wait(2000)
+  await df.wait()
   await miscClient.connectAsync(mserver.ip, mserver.port)
   return {
     sendDanmu (content: string) {
