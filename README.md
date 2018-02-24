@@ -1,7 +1,5 @@
 # 斗鱼HTML5播放器
 
-0.7.0 开始已经使用 [FlashEmu](https://github.com/spacemeowx2/DouyuHTML5Player/blob/master/src/flash/flashemu.js) 进行签名, Flash 仅仅用于连接弹幕服务器.
-
 基于 [flv.js](https://github.com/Bilibili/flv.js) 的斗鱼HTML5播放器.
 
 使用了 flv.js 内核提供的直播流播放, 用 JavaScript 实现了斗鱼的弹幕协议, 并支持发送弹幕和送礼物.
@@ -26,7 +24,7 @@
 
 # 原理
 
-视频播放基于 flv.js, 弹幕发射使用 CSS3, 弹幕协议通过自制一个很小的 Flash 与 JavaScript 通信, 在 JavaScript 中实现斗鱼的弹幕协议.
+视频播放基于 flv.js, 弹幕发射使用 CSS3, 弹幕使用 WebSocket 连接, 在 JavaScript 中实现斗鱼的弹幕协议.
 
 由于斗鱼使用了 HTTPS, 受到 Mixed Content 限制, 只能在 Background 页面 fetch 视频内容再传到 Content Script 给 flv.js 进行播放.
 
@@ -39,6 +37,12 @@
 2. `npm run build`
 
 3. `npm run pack` 在 versions 文件夹查看 zip 文件
+
+# 重要更新
+
+0.8.4 开始使用 WebSocket 连接弹幕服务器, 完全摆脱 Flash 的依赖.
+
+0.7.0 开始已经使用 [flash-emu](https://github.com/spacemeowx2/flash-emu) 进行签名
 
 # 捐赠
 
