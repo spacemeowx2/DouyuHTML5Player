@@ -207,6 +207,15 @@ export class PlayerUI {
       }
     })
 
+    document.addEventListener('mozfullscreenchange', event => {
+      this._fullscreen = !this._fullscreen
+      if (!this._fullscreen) {
+        if (this.sizeState.is(SizeState.FullScreen)) {
+          this.sizeState.go(SizeState.ExitFullScreen)
+        }
+      }
+    })
+
     document.addEventListener('webkitfullscreenchange', event => {
       this._fullscreen = !this._fullscreen
       if (!this._fullscreen) {
