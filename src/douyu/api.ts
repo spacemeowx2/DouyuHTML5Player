@@ -1,5 +1,4 @@
-import {p32, u32, postMessage, utf8_to_ascii, ascii_to_utf8, randInt, delay, DelayNotify, LocalStorage} from '../utils'
-import {JSocket, Handlers} from '../JSocket'
+import {postMessage, randInt, DelayNotify, LocalStorage} from '../utils'
 import md5 from '../md5'
 const storage = new LocalStorage('h5plr')
 const PUREMODE = 'pureMode'
@@ -90,7 +89,7 @@ class DouyuProtocol {
   connectHandler: () => void = () => null
   ws: WebSocket
   decoder = new TextDecoder('utf-8')
-  encoder = new TextEncoder('utf-8')
+  encoder = new TextEncoder()
   constructor (public listener: DouyuListener) {
     this.buffer = new ArrayBuffer(0)
   }
@@ -272,9 +271,9 @@ abstract class DouyuBaseClient implements DouyuListener {
   startKeepalive () {
     this.send(this.keepalivePkg())
     if (this.keepaliveId) {
-      clearInterval(this.keepaliveId)
+      window.clearInterval(this.keepaliveId)
     }
-    this.keepaliveId = setInterval(() => this.send(this.keepalivePkg()), 30 * 1000)
+    this.keepaliveId = window.setInterval(() => this.send(this.keepalivePkg()), 30 * 1000)
   }
   constructor (public roomId: string) {
     this.prot = new DouyuProtocol(this)

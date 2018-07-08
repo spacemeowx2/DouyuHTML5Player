@@ -1,6 +1,5 @@
-import {JSocket} from '../JSocket'
 import { douyuApi, DouyuAPI, ACJ } from './api'
-import {onMessage, postMessage, retry} from '../utils'
+import {onMessage, postMessage} from '../utils'
 
 declare var window: {
   [key: string]: any
@@ -24,8 +23,44 @@ function getParam(flash: any, name: string) {
 function getRoomIdFromFlash(s: string) {
   return s.split('&').filter(i => i.substr(0,6) == 'RoomId')[0].split('=')[1]
 }
+function hookH5() {
+  const player = window['require']('douyu-liveH5/live/js/player')
+  const postReady = () => {
+    const player = window['require']('douyu-liveH5/live/js/player')
+    if (player === null) {
+      throw new Error(`Can't find the player`)
+    }
+    console.log(player.params, player.root)
+    const roomId = player.params.flashvars.RoomId
+    console.log('RoomId', roomId)
+    const ctr = document.getElementById(player.root.id)
+    const box = document.createElement('div')
+    box.id = `space_douyu_html5_player`
+    ctr.appendChild(box)
+    postMessage('VIDEOID', {
+        roomId: roomId,
+        id: box.id
+    })
+  }
+  if (player === null) {
+    console.log('player null, hook `require.use`')
+    hookFunc(window.require, 'use', (old, args) => {
+      const name: string = args[0][0]
+
+      if (name.indexOf('douyu-liveH5/live/js') !== -1) {
+        console.log('require.use', name, name.indexOf('douyu-liveH5/live/js'))
+        postReady()
+      } else {
+        let ret = old.apply(null, args)
+        return ret
+      }
+    })
+  } else {
+    console.error('we have the player. TODO.')
+  }
+}
 hookFunc(document, 'createElement', (old, args) => {
-  var ret = old.apply(null, args)
+  let ret = old.apply(null, args)
   if (args[0] == 'object') {
     hookFunc(ret, 'setAttribute', (old, args) => {
       // console.log(args)
@@ -47,7 +82,7 @@ hookFunc(document, 'createElement', (old, args) => {
   }
   return ret
 })
-
+hookH5()
 let api: DouyuAPI
 onMessage('BEGINAPI', async data => {
   // await retry(() => JSocket.init(), 3)
