@@ -288,6 +288,7 @@ onMessage('VIDEOID', async data => {
           type: 'disable'
         })
       }
+      await postMessage('CONTINUE_ORIGIN', {})
       return
     }
   } catch (e) {

@@ -1,6 +1,9 @@
 import { douyuApi, DouyuAPI, ACJ } from './api'
 import {onMessage, postMessage} from '../utils'
 
+const emptyFunc = () => {}
+let originUse = emptyFunc
+let useOrigin = false
 declare var window: {
   [key: string]: any
 } & Window
@@ -42,10 +45,13 @@ function hookH5() {
     hookFunc(window.require, 'use', (old, args) => {
       const name: string = args[0][0]
 
-      if (name.indexOf('douyu-liveH5/live/js') !== -1) {
+      if (!useOrigin && name.indexOf('douyu-liveH5/live/js') !== -1) {
         const cb: Function = args[1]
 
         console.log('require.use', name)
+        originUse = () => {
+          old.apply(null, args)
+        }
         cb({
           load (param: any) {
             postReady(param)
@@ -95,4 +101,10 @@ onMessage('SENDANMU', data => {
 })
 onMessage('ACJ', data => {
   ACJ(data.id, data.data)
+})
+onMessage('CONTINUE_ORIGIN', data => {
+  console.log('...continue')
+  useOrigin = true
+  originUse()
+  originUse = emptyFunc
 })
