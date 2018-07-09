@@ -25,13 +25,8 @@ function getRoomIdFromFlash(s: string) {
 }
 function hookH5() {
   const player = window['require']('douyu-liveH5/live/js/player')
-  const postReady = () => {
-    const player = window['require']('douyu-liveH5/live/js/player')
-    if (player === null) {
-      throw new Error(`Can't find the player`)
-    }
-    console.log(player.params, player.root)
-    const roomId = player.params.flashvars.RoomId
+  const postReady = (player: any) => {
+    const roomId = player.flashvars.RoomId
     console.log('RoomId', roomId)
     const ctr = document.getElementById(player.root.id)
     const box = document.createElement('div')
@@ -48,8 +43,14 @@ function hookH5() {
       const name: string = args[0][0]
 
       if (name.indexOf('douyu-liveH5/live/js') !== -1) {
-        console.log('require.use', name, name.indexOf('douyu-liveH5/live/js'))
-        postReady()
+        const cb: Function = args[1]
+
+        console.log('require.use', name)
+        cb({
+          load (param: any) {
+            postReady(param)
+          }
+        })
       } else {
         let ret = old.apply(null, args)
         return ret
