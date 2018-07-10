@@ -27,45 +27,60 @@ function getRoomIdFromFlash(s: string) {
   return s.split('&').filter(i => i.substr(0,6) == 'RoomId')[0].split('=')[1]
 }
 function hookH5() {
-  window.$ROOM.defaulth5 = 0
-  // const player = window['require']('douyu-liveH5/live/js/player')
-  // const postReady = (player: any) => {
-  //   const roomId = player.flashvars.RoomId
-  //   console.log('RoomId', roomId)
-  //   const ctr = document.getElementById(player.root.id)
-  //   const box = document.createElement('div')
-  //   box.id = `space_douyu_html5_player`
-  //   ctr.appendChild(box)
-  //   postMessage('VIDEOID', {
-  //       roomId: roomId,
-  //       id: box.id
-  //   })
-  // }
-  // if (player === null) {
-  //   console.log('player null, hook `require.use`')
-  //   hookFunc(window.require, 'use', (old, args) => {
-  //     const name: string = args[0][0]
+  const player = window['require']('douyu-liveH5/live/js/player')
+  const postReady = (player: any) => {
+    const roomId = player.flashvars.RoomId
+    console.log('RoomId', roomId)
+    const ctr = document.getElementById(player.root.id)
+    const box = document.createElement('div')
+    box.id = `space_douyu_html5_player`
+    ctr.appendChild(box)
+    postMessage('VIDEOID', {
+        roomId: roomId,
+        id: box.id
+    })
+  }
+  const fakePlayer = {
+    init (root: HTMLElement, param: any) {
+      console.log('fake init', param)
+      postReady(param)
+    },
+    load (param: any) {
+      console.log('fake load', param)
+      postReady(param)
+    }
+  }
+  if (player === null) {
+    console.log('player null, hook `require.use`')
+    const oldUse = window.require.use
+    hookFunc(window, 'require', (old, args) => {
+      const name = args[0]
+      if (name === 'douyu-liveH5/live/js/h5') {
+        return fakePlayer
+      }
+      let ret = old.apply(null, args)
+      return ret
+    })
+    window.require.use = oldUse
+    hookFunc(window.require, 'use', (old, args) => {
+      const name: string = args[0][0]
 
-  //     if (!useOrigin && name.indexOf('douyu-liveH5/live/js') !== -1) {
-  //       const cb: Function = args[1]
+      if (!useOrigin && name.indexOf('douyu-liveH5/live/js') !== -1) {
+        const cb: Function = args[1]
 
-  //       console.log('require.use', name)
-  //       originUse = () => {
-  //         old.apply(null, args)
-  //       }
-  //       cb({
-  //         load (param: any) {
-  //           postReady(param)
-  //         }
-  //       })
-  //     } else {
-  //       let ret = old.apply(null, args)
-  //       return ret
-  //     }
-  //   })
-  // } else {
-  //   console.error('we have the player. TODO.')
-  // }
+        console.log('require.use', name)
+        originUse = () => {
+          old.apply(null, args)
+        }
+        cb(fakePlayer)
+      } else {
+        let ret = old.apply(null, args)
+        return ret
+      }
+    })
+  } else {
+    console.error('we have the player. TODO.')
+  }
 }
 hookFunc(document, 'createElement', (old, args) => {
   let ret = old.apply(null, args)
