@@ -4,7 +4,7 @@
 
     "name": "斗鱼HTML5播放器",
     "description": "基于 flv.js 的斗鱼HTML5播放器.",
-    "version": "0.8.9",
+    "version": "0.8.10",
 
     "page_action": {
         "default_icon": "icon.png"

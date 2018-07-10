@@ -1,6 +1,6 @@
 {
   "name": "douyu-html5-player",
-  "version": "0.8.9",
+  "version": "0.8.10",
   "description": "斗鱼HTML5播放器",
   "main": "index.js",
   "scripts": {
