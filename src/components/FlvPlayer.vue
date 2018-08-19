@@ -4,13 +4,7 @@
     h1 {{hello}}
 </template>
 <script>
-export default {
-  data () {
-    return {
-      hello: 'world'
-    }
-  }
-}
+export * from './FlvPlayer'
 </script>
 <style lang="less" scoped>
   .danmu-player {

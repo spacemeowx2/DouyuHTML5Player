@@ -1,6 +1,6 @@
 import FlashEmu from 'flash-emu'
 import { PortHandler, Port } from 'utils/extension'
-import { uint8ToBase64, convertHeader } from 'utils/helper'
+import { uint8ToBase64, header2Object } from 'utils/helper'
 import { idleUnload, Unloadable } from 'utils/idle-unload'
 
 FlashEmu.BUILTIN = 'dist/builtin.abc'
@@ -98,7 +98,7 @@ class FetchHandler implements PortHandler<FetchMessage> {
         statusText: r.statusText,
         type: r.type,
         url: r.url,
-        headers: convertHeader(r.headers)
+        headers: header2Object(r.headers)
       }
     } else if (msg.method === 'json') {
       return await this.response.json()
