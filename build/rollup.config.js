@@ -1,6 +1,7 @@
 import vue from 'rollup-plugin-vue'
 import copy from 'rollup-plugin-copy'
 import nodeResolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
 import replace from 'rollup-plugin-replace'
 
@@ -12,16 +13,18 @@ const types = ['content', 'inject']
 const globals = {
   'vue': 'Vue',
   'vuex': 'Vuex',
-  'flash-emu': 'FlashEmu'
+  'flash-emu': 'FlashEmu',
+  'flv.js': 'flvjs',
 }
 const commonPlugins = [
+  nodeResolve(),
+  commonjs(),
   replace({
     'process.env.NODE_ENV': JSON.stringify(debug ? 'debug' : 'production')
   }),
   vue({
     css: true
   }),
-  nodeResolve(),
   typescript()
 ]
 class SiteConfig {
