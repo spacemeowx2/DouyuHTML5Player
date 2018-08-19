@@ -1,4 +1,4 @@
-import Option from './common/view/options.vue'
+import Option from './common/view/option.vue'
 import Vue from 'vue'
 import store from './store'
 

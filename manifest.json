@@ -1,0 +1,52 @@
+{
+    "manifest_version": 2,
+    "minimum_chrome_version": "49",
+
+    "name": "斗鱼HTML5播放器",
+    "description": "基于 flv.js 的斗鱼HTML5播放器.",
+    "version": "1.0.0.0",
+
+    "page_action": {
+        "default_icon": "icon.png"
+    },
+
+    "icons": {
+        "256": "icon.png"
+    },
+  
+    "background": {
+        "scripts": ["dist/js/flashemu.js", "dist/js/background.js"],
+        "persistent": false
+    },
+
+    "permissions": [
+        "cookies",
+        "tabs",
+        "storage",
+        "*://*.douyu.com/*",
+        "*://*.douyucdn.cn/*",
+        "*://*/*"
+    ],
+    
+    "web_accessible_resources": [
+        "icon.png",
+        "libs/JSocket.js",
+        "libs/md5.js",
+        "libs/less.min.js",
+        "src/img/*",
+        "src/*",
+        "src/sharedWorker/sharedWorker.html",
+        "dist/*",
+        "*://*/*"
+    ],
+    
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.douyu.com/*"
+            ],
+            "js": ["dist/js/flv.min.js", "dist/js/douyu-content.js"],
+            "run_at": "document_end"
+        }
+    ]
+}

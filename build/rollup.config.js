@@ -11,7 +11,8 @@ const sites = ['douyu']
 const types = ['content', 'inject']
 const globals = {
   'vue': 'Vue',
-  'vuex': 'Vuex'
+  'vuex': 'Vuex',
+  'flash-emu': 'FlashEmu'
 }
 const commonPlugins = [
   replace({
@@ -29,7 +30,7 @@ class SiteConfig {
   }
   output (type) {
     return {
-      format: 'umd',
+      format: 'iife',
       file: `dist/js/${this.name}-${type}.js`,
       globals
     }
@@ -56,25 +57,37 @@ function plugins() {
       'src/option.html': 'dist/html/option.html',
       'node_modules/vue/dist/vue.runtime.js': 'dist/js/vue.js',
       'node_modules/vuex/dist/vuex.js': 'dist/js/vuex.js',
-      'node_modules/flv.js/dist/flv.js': 'dist/js/flv.js',
+      'node_modules/flv.js/dist/flv.min.js': 'dist/js/flv.min.js',
+      'node_modules/flash-emu/dist/flashemu.js': 'dist/js/flashemu.js',
       verbose: true
     }),
   ]
+}
+function background () {
+  return {
+    input: `src/background.ts`,
+    plugins: commonPlugins,
+    output: {
+      format: 'iife',
+      file: `dist/js/background.js`,
+      globals
+    },
+    external: Object.keys(pkg['dependencies']),
+  }
 }
 function option () {
   return {
     input: `src/option.ts`,
     plugins: plugins(),
     output: {
-      format: 'umd',
+      format: 'iife',
       file: `dist/js/option.js`,
       globals
     },
     external: Object.keys(pkg['dependencies']),
   }
 }
-
-export default sites.map(name => {
+export default [...sites.map(name => {
   const site = new SiteConfig(name)
   return site.config()
-}).reduce((r, i) => r.concat(i), []).concat(...[option()])
+}).reduce((r, i) => [...r, ...i], []), option(), background()]
