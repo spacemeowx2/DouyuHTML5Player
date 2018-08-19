@@ -13,6 +13,8 @@
     "icons": {
         "256": "icon.png"
     },
+
+    "options_page": "dist/html/option.html",
   
     "background": {
         "scripts": ["dist/js/flashemu.js", "dist/js/background.js"],
@@ -30,14 +32,7 @@
     
     "web_accessible_resources": [
         "icon.png",
-        "libs/JSocket.js",
-        "libs/md5.js",
-        "libs/less.min.js",
-        "src/img/*",
-        "src/*",
-        "src/sharedWorker/sharedWorker.html",
-        "dist/*",
-        "*://*/*"
+        "dist/html/option.html"
     ],
     
     "content_scripts": [

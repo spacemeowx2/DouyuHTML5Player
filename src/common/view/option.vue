@@ -14,7 +14,7 @@ const dict = new Map([
 ])
 export default {
   data () {
-    return {
+    return { 
       hello: 'world'
     }
   },
