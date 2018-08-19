@@ -1,10 +1,9 @@
 <template lang="pug">
-  .danmu-player
-    h1 Test
-    h1 {{hello}}
+  video(ref='video', style='width: 100%; height: 100%')
 </template>
 <script>
-export * from './FlvPlayer'
+import FlvVideo from './FlvVideo'
+export default FlvVideo 
 </script>
 <style lang="less" scoped>
   .danmu-player {

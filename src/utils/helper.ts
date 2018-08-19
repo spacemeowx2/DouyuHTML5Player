@@ -30,3 +30,19 @@ export function object2Header (obj: any) {
   }
   return out
 }
+export function createBlobURL (content: string, type: string) {
+  var blob = new Blob([content], { type })
+  return URL.createObjectURL(blob)
+}
+export function getURL (src: string) {
+  if (src.substr(0, 5) !== 'blob:') {
+    src = chrome.runtime.getURL(src)
+  }
+  return src
+}
+export function addScript (src: string) {
+  var script = document.createElement('script')
+  // blob:
+  script.src = getURL(src)
+  document.head.appendChild(script)
+}

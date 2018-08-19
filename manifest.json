@@ -32,7 +32,8 @@
     
     "web_accessible_resources": [
         "icon.png",
-        "dist/html/option.html"
+        "dist/html/option.html",
+        "dist/js/*.js"
     ],
     
     "content_scripts": [
