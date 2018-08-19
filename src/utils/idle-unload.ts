@@ -36,7 +36,7 @@ export class IdleUnload<TS extends any[], R> {
     }
   }
   getFunc () {
-    return (...args: TS): Promise<R> => this.obj.execute(...args)
+    return (...args: TS): Promise<R> => this.execute(...args)
   }
   private afterRun () {
     if (this.running === 0) {

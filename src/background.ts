@@ -6,10 +6,10 @@ import { idleUnload, Unloadable } from 'utils/idle-unload'
 FlashEmu.BUILTIN = 'dist/builtin.abc'
 FlashEmu.PLAYERGLOBAL = 'dist/playerglobal.abc'
 FlashEmu.setGlobalFlags({
-  enableDebug: false,
-  enableLog: false,
-  enableWarn: false,
-  enableError: false
+  enableDebug: true,
+  enableLog: true,
+  enableWarn: true,
+  enableError: true
 })
 
 class AutoSigner implements Unloadable<[string, string, string], {sign: string, cptl: string}> {
@@ -26,9 +26,12 @@ class AutoSigner implements Unloadable<[string, string, string], {sign: string, 
       }
     })
     await emu.runSWF('dist/douyu.swf', false)
-    const vm = emu.getVM()
-    const CModule = vm.getProxy(emu.getProperty('sample.mp', 'CModule'))
-    const xx = vm.getProxy(emu.getPublicClass('mp'))
+    // const vm = emu.getVM()
+    // const CModule = vm.getProxy(emu.getProperty('sample.mp', 'CModule'))
+    // const xx = vm.getProxy(emu.getPublicClass('mp'))
+    const CModule = emu.getProperty('sample.mp', 'CModule')
+    const xx = emu.getPublicClass('mp')
+    console.log(CModule)
     CModule.callProperty('startAsync')
 
     this.CModule = CModule
@@ -161,7 +164,8 @@ class SignerHandler implements PortHandler<SignerMessage> {
     })
   }
 }
-chrome.runtime.onConnect.addListener(port => {
+
+const connectListener = (port: chrome.runtime.Port) => {
   let handler: PortHandler<any>
   if (port.name === 'fetch') {
     console.log('new fetch port', port)
@@ -172,4 +176,6 @@ chrome.runtime.onConnect.addListener(port => {
   }
   port.onDisconnect.addListener(() => handler.onDisconnect())
   port.onMessage.addListener(msg => handler.onMessage(msg))
-})
+}
+chrome.runtime.onConnect.addListener(connectListener)
+chrome.runtime.onConnectExternal.addListener(connectListener)

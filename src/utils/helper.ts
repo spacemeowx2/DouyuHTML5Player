@@ -1,3 +1,4 @@
+import { runtimeGetUrl } from './extension'
 export const isDebug = process.env.NODE_ENV !== 'production' as string
 export function uint8ToBase64 (buffer: Uint8Array) {
   let binary = ''
@@ -36,7 +37,7 @@ export function createBlobURL (content: string, type: string) {
 }
 export function getURL (src: string) {
   if (src.substr(0, 5) !== 'blob:') {
-    src = chrome.runtime.getURL(src)
+    src = runtimeGetUrl(src)
   }
   return src
 }

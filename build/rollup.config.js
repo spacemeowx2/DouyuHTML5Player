@@ -58,10 +58,14 @@ function plugins() {
     ...commonPlugins,
     copy({
       'src/option.html': 'dist/html/option.html',
+      'src/flash/builtin.abc': 'dist/builtin.abc',
+      'src/flash/playerglobal.abc': 'dist/playerglobal.abc',
+      'src/flash/douyu.swf': 'dist/douyu.swf',
       'node_modules/vue/dist/vue.runtime.js': 'dist/js/vue.js',
       'node_modules/vuex/dist/vuex.js': 'dist/js/vuex.js',
       'node_modules/flv.js/dist/flv.min.js': 'dist/js/flv.min.js',
-      'node_modules/flash-emu/dist/flashemu.js': 'dist/js/flashemu.js',
+      // 'node_modules/flash-emu/dist/flashemu.js': 'dist/js/flashemu.js',
+      'src/flash/flashemu.js': 'dist/js/flashemu.js',
       verbose: true
     }),
   ]

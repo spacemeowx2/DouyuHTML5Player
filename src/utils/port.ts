@@ -1,6 +1,8 @@
+import { runtimeConnect } from './extension'
+
 export type PostFunction<T = any> = (method: string, ...args: any[]) => Promise<T>
 export function runtimePort (name: string) {
-  const port: chrome.runtime.Port = chrome.runtime.connect({ name })
+  const port: chrome.runtime.Port = runtimeConnect(name)
   let curMethod = ''
   let curResolve: Function | null = null
   let curReject: Function | null = null
