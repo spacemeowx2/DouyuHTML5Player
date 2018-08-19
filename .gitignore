@@ -2,3 +2,4 @@ node_modules/
 dist/
 versions/
 package-lock.json
+.rpt2_cache/

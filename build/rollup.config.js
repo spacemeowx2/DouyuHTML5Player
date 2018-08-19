@@ -1,7 +1,7 @@
 import vue from 'rollup-plugin-vue'
 import copy from 'rollup-plugin-copy'
 import nodeResolve from 'rollup-plugin-node-resolve'
-import typescript from 'rollup-plugin-typescript'
+import typescript from 'rollup-plugin-typescript2'
 import replace from 'rollup-plugin-replace'
 
 const debug = process.env.NODE_ENV !== 'production'
@@ -21,9 +21,7 @@ const commonPlugins = [
     css: true
   }),
   nodeResolve(),
-  typescript({
-    typescript: require('typescript')
-  })
+  typescript()
 ]
 class SiteConfig {
   constructor (name) {
