@@ -21,7 +21,7 @@
   "author": "spacemeowx2",
   "license": "MIT",
   "dependencies": {
-    "flash-emu": "^2.0.1",
+    "flash-emu": "^2.0.2",
     "flv.js": "^1.4.2",
     "tslib": "^1.9.3",
     "vue": "^2.5.17",

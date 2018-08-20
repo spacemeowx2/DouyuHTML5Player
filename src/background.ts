@@ -6,10 +6,10 @@ import { idleUnload, Unloadable } from 'utils/idle-unload'
 FlashEmu.BUILTIN = 'dist/builtin.abc'
 FlashEmu.PLAYERGLOBAL = 'dist/playerglobal.abc'
 FlashEmu.setGlobalFlags({
-  enableDebug: true,
-  enableLog: true,
-  enableWarn: true,
-  enableError: true
+  enableDebug: false,
+  enableLog: false,
+  enableWarn: false,
+  enableError: false
 })
 
 class AutoSigner implements Unloadable<[string, string, string], {sign: string, cptl: string}> {
@@ -26,12 +26,9 @@ class AutoSigner implements Unloadable<[string, string, string], {sign: string, 
       }
     })
     await emu.runSWF('dist/douyu.swf', false)
-    // const vm = emu.getVM()
-    // const CModule = vm.getProxy(emu.getProperty('sample.mp', 'CModule'))
-    // const xx = vm.getProxy(emu.getPublicClass('mp'))
-    const CModule = emu.getProperty('sample.mp', 'CModule')
-    const xx = emu.getPublicClass('mp')
-    console.log(CModule)
+    const vm = emu.getVM()
+    const CModule = vm.getProxy(emu.getProperty('sample.mp', 'CModule'))
+    const xx = vm.getProxy(emu.getPublicClass('mp'))
     CModule.callProperty('startAsync')
 
     this.CModule = CModule

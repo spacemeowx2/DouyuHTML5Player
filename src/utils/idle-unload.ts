@@ -26,10 +26,15 @@ export class IdleUnload<TS extends any[], R> {
     if (this.timeoutId !== undefined) {
       window.clearTimeout(this.timeoutId)
     }
-    await this.doLoad()
     try {
+      await this.doLoad()
       this.running++
       return await this.obj.execute(...args)
+    }  catch (e) {
+      console.error('Error while executing', e)
+      console.error(e.stack)
+      this.task = Promise.resolve()
+      throw e
     } finally {
       this.running--
       this.afterRun()

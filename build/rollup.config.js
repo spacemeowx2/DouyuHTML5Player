@@ -64,8 +64,7 @@ function plugins() {
       'node_modules/vue/dist/vue.runtime.js': 'dist/js/vue.js',
       'node_modules/vuex/dist/vuex.js': 'dist/js/vuex.js',
       'node_modules/flv.js/dist/flv.min.js': 'dist/js/flv.min.js',
-      // 'node_modules/flash-emu/dist/flashemu.js': 'dist/js/flashemu.js',
-      'src/flash/flashemu.js': 'dist/js/flashemu.js',
+      'node_modules/flash-emu/dist/flashemu.js': 'dist/js/flashemu.js',
       verbose: true
     }),
   ]
