@@ -3,19 +3,25 @@ import Vue from 'vue'
 import flvjs from 'flv.js'
 import { hookFetch } from 'utils/hook'
 import { runtimePort } from 'utils/port'
-import { getSourceURL } from 'douyu/source'
+import { getSourceURL } from './source'
+import { hook, RoomInfo } from './hook'
 hookFetch()
+
+const hookAsync = () => new Promise<RoomInfo>(cb => hook(cb))
 
 async function main () {
   flvjs.LoggingControl.forceGlobalTag = true
   flvjs.LoggingControl.enableAll = true
   
+  const { roomId, id } = await hookAsync()
+  console.log('hook ok', roomId, id)
+  
   const player = new Vue(DanmuPlayer)
-  player.$mount('#douyu_room_normal_flash_proxy_box > div')
+  player.$mount(`#${id}`)
   console.log('mount')
 
   // @ts-ignore
-  player.src = await getSourceURL('57321', 'ws', '0')
+  player.src = await getSourceURL(roomId, 'ws', '0')
   // @ts-ignore
   console.log(player.src)
 }
