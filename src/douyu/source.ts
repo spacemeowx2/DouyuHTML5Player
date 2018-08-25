@@ -1,6 +1,7 @@
 import md5 from 'utils/md5'
 import { ISignerResult } from './source'
 import { runtimePort } from 'utils/port'
+import { BaseSource, RateKey } from 'common/source'
 
 const port = runtimePort('signer')
 async function BackgroundSigner (rid: string, tt: number, did: string): Promise<ISignerResult> {
@@ -59,4 +60,29 @@ async function getSwfApi (rid: string) {
   const res = await fetch(`https://www.douyu.com/swf_api/room/${rid}?cdn=&nofan=yes&_t=${tt}&sign=${sign}`)
   const obj = await res.json()
   return await obj.data
+}
+
+export class Source extends BaseSource {
+  constructor () {
+    super([{
+      key: 'cdn',
+      display: '线路'
+    }, {
+      key: RateKey,
+      display: '清晰度',
+      subOptions: [{
+        key: '0',
+        display: '超清'
+      }, {
+        key: '2',
+        display: '高清'
+      }, {
+        key: '1',
+        display: '普清'
+      }]
+    }])
+  }
+  async init () {
+    
+  }
 }

@@ -27,4 +27,4 @@ async function main () {
 }
 main().catch(e => console.error(e))
 // @ts-ignore
-window.test = runtimePort
+window.Vue = Vue
