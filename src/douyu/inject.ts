@@ -79,7 +79,14 @@ function hookH5() {
       }
     })
   } else {
-    console.error('we have the player. TODO.')
+    if (player.h5player) {
+      player.h5player.destroy()
+      postReady(player.params)
+    } else {
+      player.init = fakePlayer.init
+      player.load = fakePlayer.load
+      console.error('TODO player: 1 h5player: 0')
+    }
   }
 }
 hookFunc(document, 'createElement', (old, args) => {
